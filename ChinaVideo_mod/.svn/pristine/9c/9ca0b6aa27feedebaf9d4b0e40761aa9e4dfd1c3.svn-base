@@ -1,0 +1,118 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <View
+        android:id="@+id/room_anchor_top"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/room_anchor_bottom" />
+
+    <LinearLayout
+        android:id="@+id/room_anchor_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical" >
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@drawable/bottom_background" />
+
+        <FrameLayout
+            android:id="@+id/id_content"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:background="#f4f4f4" >
+        </FrameLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@drawable/bottom_background" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="49dp"
+            android:background="#f4f4f4" >
+
+            <LinearLayout
+                android:id="@+id/id_tab_bottom_friend"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:descendantFocusability="beforeDescendants"
+                android:gravity="center"
+                android:orientation="vertical" >
+
+                <ImageButton
+                    android:id="@+id/btn_tab_bottom_friend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#0000"
+                    android:clickable="false"
+                    android:src="@drawable/icon_zhubo_on" />
+
+                <TextView
+                    android:id="@+id/zhubo_anchor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="主播"
+                    android:textColor="@color/item_textcolor" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/id_tab_bottom_contact"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:descendantFocusability="beforeDescendants"
+                android:gravity="center"
+                android:orientation="vertical" >
+
+                <ImageButton
+                    android:id="@+id/btn_tab_bottom_contact"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#0000"
+                    android:clickable="false"
+                    android:src="@drawable/icon_shouhu" />
+
+                <TextView
+                    android:id="@+id/shouhu_anchor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="守护"
+                    android:textColor="@color/item_textcolor" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/id_tab_bottom_setting"
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:descendantFocusability="beforeDescendants"
+                android:gravity="center"
+                android:orientation="vertical" >
+
+                <ImageButton
+                    android:id="@+id/btn_tab_bottom_setting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#0000"
+                    android:clickable="false"
+                    android:src="@drawable/icon_guizu" />
+
+                <TextView
+                    android:id="@+id/guizu_anchor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="贵族"
+                    android:textColor="@color/item_textcolor" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>

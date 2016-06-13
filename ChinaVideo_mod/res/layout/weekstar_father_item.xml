@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/biaoqian" />
+
+        <TextView
+            android:id="@+id/fy_rank_title"
+            android:layout_width="wrap_content"
+            android:layout_height="46dp"
+            android:gravity="center_vertical"
+            android:text="日榜："
+            android:textColor="@color/rank_title"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/fy_rank_content"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:gravity="center_vertical"
+            android:singleLine="true"
+            android:textColor="@color/bg_dialog"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <View
+        android:id="@+id/room_ranklist_top"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/pull_fans_lsit" />
+
+    <com.handmark.pulltorefresh.library.PullToRefreshExpandableListView
+        android:background="@color/white"
+        xmlns:PullToRefresh="http://schemas.android.com/apk/res/com.zhipu.chinavideo"
+        android:id="@+id/pull_fans_lsit"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_alignParentBottom="true"
+        PullToRefresh:ptrHeaderSubTextColor="#ff7e7e7e"
+        PullToRefresh:ptrHeaderTextColor="#ff545454"
+        PullToRefresh:ptrMode="pullFromStart"
+        PullToRefresh:ptrRefreshableViewBackground="#fffafafa"
+        PullToRefresh:ptrShowIndicator="false"
+        android:cacheColorHint="#00000000"
+        android:childDivider="@drawable/listview_line"
+        android:divider="@drawable/listview_line"
+        android:dividerHeight="0.5dp"
+        android:fadingEdge="none"
+        android:fadingEdgeLength="0.0dip"
+        android:footerDividersEnabled="false"
+        android:headerDividersEnabled="false"
+        android:listSelector="@android:color/transparent" />
+
+</RelativeLayout>

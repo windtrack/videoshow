@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/qianhui"
+    android:orientation="vertical" >
+
+    <include
+        android:id="@+id/audience_loading"
+        layout="@layout/livehall_loading" />
+
+    <com.handmark.pulltorefresh.library.PullToRefreshExpandableListView
+        xmlns:PullToRefresh="http://schemas.android.com/apk/res/com.zhipu.chinavideo"
+        android:id="@+id/audience_lsit"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/ll_bottom"
+        PullToRefresh:ptrHeaderSubTextColor="#ff7e7e7e"
+        PullToRefresh:ptrHeaderTextColor="#ff545454"
+        PullToRefresh:ptrMode="pullFromStart"
+        PullToRefresh:ptrRefreshableViewBackground="#fffafafa"
+        PullToRefresh:ptrShowIndicator="false"
+        android:cacheColorHint="#00000000"
+        android:divider="@drawable/listview_line"
+        android:dividerHeight="1dp"
+        android:fadingEdge="none"
+        android:fadingEdgeLength="0.0dip"
+        android:footerDividersEnabled="false"
+        android:headerDividersEnabled="false"
+        android:listSelector="@android:color/transparent" />
+
+    <ExpandableListView
+        android:id="@+id/guard_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/ll_bottom"
+        android:background="@color/white"
+        android:divider="@drawable/listview_line"
+        android:dividerHeight="1dp"
+        android:groupIndicator="@null"
+        android:visibility="gone" />
+
+    <ExpandableListView
+        android:id="@+id/manager_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/ll_bottom"
+        android:background="@color/white"
+        android:divider="@drawable/listview_line"
+        android:dividerHeight="1dp"
+        android:groupIndicator="@null"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/ll_bottom"
+        android:layout_width="fill_parent"
+        android:layout_height="40dip"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal" >
+
+        <CheckedTextView
+            android:id="@+id/ctv_guard_list"
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="守护"
+            android:textColor="@color/black"
+            android:textSize="18dp" />
+
+        <CheckedTextView
+            android:id="@+id/ctv_viewer_list"
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="观众"
+            android:textColor="@color/title_bg"
+            android:textSize="18dp" />
+
+        <CheckedTextView
+            android:id="@+id/ctv_manager_list"
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="管理"
+            android:textColor="@color/black"
+            android:textSize="18dp" />
+    </LinearLayout>
+
+</RelativeLayout>

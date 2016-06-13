@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:id="@+id/main" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@drawable/title_bg_pic" >
+
+        <ImageView
+            android:id="@+id/title_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:padding="6dp"
+            android:src="@drawable/title_back" />
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="@android:color/white"
+            android:text="@string/app_name"
+            android:textSize="20sp" />
+        <ImageView 
+            android:id="@+id/icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/zhubo_icon"
+            android:layout_toRightOf="@id/title_text"
+            android:layout_centerVertical="true"
+            android:contentDescription="@string/app_name"
+            />
+        
+        <Button 
+			android:id="@+id/shaixuan_btn"
+			android:layout_alignParentRight="true"
+			android:layout_centerVertical="true" 
+			android:background="@null"
+			android:textSize="18sp"
+			android:text="筛选"
+			android:textColor="@color/white"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:padding="10dp"
+			android:layout_marginRight="5dp"
+            />
+    </RelativeLayout>
+    
+    <include
+        android:id="@+id/get_round_person_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        layout="@layout/livehall_loading"
+        android:visibility="visible" />
+    
+    <Button
+        android:id="@+id/no_data"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="您的周边，没有达人"
+        android:background="@null"
+        android:textSize="20sp"
+        android:textColor="@color/disc_word"
+        android:layout_gravity="center_vertical"
+        android:visibility="gone"
+        />
+
+    <com.handmark.pulltorefresh.library.PullToRefreshExpandableListView
+        xmlns:PullToRefresh="http://schemas.android.com/apk/res/com.zhipu.chinavideo"
+        android:id="@+id/round_person_lsit"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        PullToRefresh:ptrHeaderSubTextColor="#ff7e7e7e"
+        PullToRefresh:ptrHeaderTextColor="#ff545454"
+        PullToRefresh:ptrMode="pullFromStart"
+        PullToRefresh:ptrRefreshableViewBackground="#fffafafa"
+        PullToRefresh:ptrShowIndicator="false"
+        android:cacheColorHint="#00000000"
+        android:divider="@drawable/listview_line"
+        android:dividerHeight="1dp"
+        android:fadingEdge="none"
+        android:fadingEdgeLength="0.0dip"
+        android:footerDividersEnabled="false"
+        android:headerDividersEnabled="false"
+        android:listSelector="@android:color/transparent" />
+
+</LinearLayout>

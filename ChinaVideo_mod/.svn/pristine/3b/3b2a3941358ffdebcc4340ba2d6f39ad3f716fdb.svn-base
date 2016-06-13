@@ -1,0 +1,28 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <GridView
+        android:id="@+id/cankugift_gridview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="@color/qianhui"
+        android:gravity="center"
+        android:horizontalSpacing="1.0dp"
+        android:listSelector="#00000000"
+        android:numColumns="4"
+        android:scrollbars="none"
+        android:verticalSpacing="1.0dp" >
+    </GridView>
+
+    <TextView
+        android:textSize="18sp"
+        android:id="@+id/canku_gift_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="仓库暂时没有礼物哦！"
+        android:textColor="#e29700"
+        android:visibility="gone" />
+
+</RelativeLayout>

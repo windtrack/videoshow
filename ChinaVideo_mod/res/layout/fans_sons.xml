@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/listview_item_seleted"
+    android:orientation="vertical"
+    android:padding="5dp" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <ImageView
+            android:id="@+id/fan_mingci"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp" />
+
+        <com.zhipu.chinavideo.util.CircularImage
+            android:id="@+id/fan_icon"
+            android:layout_width="47.0dip"
+            android:layout_height="47.0dip"
+            android:layout_centerVertical="true"
+            android:layout_marginBottom="5.0dip"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10.0dip"
+            android:layout_marginTop="5.0dip"
+            android:layout_toRightOf="@+id/fan_mingci"
+            android:cacheColorHint="#00000000"
+            android:scaleType="fitXY" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/fan_icon"
+            android:orientation="vertical" >
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" >
+
+                <ImageView
+                    android:id="@+id/fans_cost_level"
+                    android:layout_width="30dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentLeft="true"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:maxEms="6"  
+                    android:singleLine="true"  
+                    android:ellipsize="end"  
+                    android:id="@+id/fans_names"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/fans_cost_level"
+                    android:textColor="#313131"
+                    android:textSize="17sp" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_marginRight="10dp"
+            android:id="@+id/contribution"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:textColor="#7e7e7e"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
+</LinearLayout>

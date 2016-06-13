@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/all_player_con"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
+
+    <RelativeLayout
+        android:id="@+id/video_left_con"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="270dp"
+        android:layout_weight="1" >
+
+        <ImageView
+            android:id="@+id/left_video_background"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/video_background"
+            android:contentDescription="@string/app_name" />
+
+        <ImageView
+            android:id="@+id/left_live_xiaolaohu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:paddingBottom="40dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/room_tiger_loading" />
+
+        <TextView
+            android:id="@+id/left_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:paddingTop="45dp"
+            android:text="客官莫急  马上就到"
+            android:textColor="#ffffff"
+            android:textSize="9sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/video_right_con"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:minHeight="270dp"
+        android:layout_weight="1" >
+
+       <ImageView
+            android:id="@+id/right_video_background"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/video_background"
+            android:contentDescription="@string/app_name" />
+
+        <ImageView
+            android:id="@+id/right_live_xiaolaohu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:paddingBottom="40dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/room_tiger_loading" />
+
+        <TextView
+            android:id="@+id/right_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:paddingTop="45dp"
+            android:text="客官莫急  马上就到"
+            android:textColor="#ffffff"
+            android:textSize="9sp" />
+    </RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,12 @@
+<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/face_gridview"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/highlight"
+    android:listSelector="#00000000"
+    android:numColumns="6"
+    android:paddingTop="10dp"
+    android:scrollbars="none"
+    android:verticalSpacing="15dp" >
+
+</GridView>

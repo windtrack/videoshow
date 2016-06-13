@@ -1,0 +1,299 @@
+package com.zhipu.chinavideo.adapter;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.zhipu.chinavideo.AnchorCenterActivity;
+import com.zhipu.chinavideo.R;
+import com.zhipu.chinavideo.entity.Rank;
+import com.zhipu.chinavideo.util.APP;
+
+import android.content.Context;
+import android.content.Intent;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+public class RankAdapter extends BaseExpandableListAdapter {
+	private Context context;
+	private List<List<Rank>> ranks;
+	private List<String> title;
+	public DisplayImageOptions mOptions;
+	private ImageLoader mImageLoader = null;
+	private String mark_name;
+	private int[] number = { R.drawable.fans_1, R.drawable.fans_2,
+			R.drawable.fans_3, R.drawable.fans_4, R.drawable.fans_5,
+			R.drawable.fans_5 };
+	private int[] rank_title = { R.drawable.rank_day, R.drawable.rank_week,
+			R.drawable.rank_month, R.drawable.rank_month };
+	private int[] rank_color = { R.color.first, R.color.second, R.color.third,
+			R.color.fourth, R.color.fourth };
+
+	public RankAdapter() {
+		super();
+	}
+
+	public RankAdapter(Context context, List<List<Rank>> ranks,
+			List<String> title, String mark_name) {
+		super();
+		this.context = context;
+		this.ranks = ranks;
+		this.title = title;
+		this.mark_name = mark_name;
+	}
+
+	@Override
+	public Object getChild(int groupPosition, int childPosition) {
+		// TODO Auto-generated method stub
+		return ranks.get(groupPosition).get(childPosition);
+	}
+
+	@Override
+	public long getChildId(int groupPosition, int childPosition) {
+		// TODO Auto-generated method stub
+		return childPosition;
+	}
+
+	@Override
+	public View getChildView(final int groupPosition, final int childPosition,
+			boolean isLastChild, View convertView, ViewGroup parent) {
+		// TODO Auto-generated method stub
+		HoldViewSon holdViewSon = null;
+		if (convertView == null) {
+			holdViewSon = new HoldViewSon();
+			convertView = LayoutInflater.from(context).inflate(
+					R.layout.rank_item, null);
+			holdViewSon.icon = (ImageView) convertView
+					.findViewById(R.id.rank_item_img);
+			holdViewSon.name = (TextView) convertView
+					.findViewById(R.id.rank_item_name);
+			holdViewSon.id = (TextView) convertView
+					.findViewById(R.id.rank_item_anchorid);
+			holdViewSon.level = (ImageView) convertView
+					.findViewById(R.id.rank_item_level);
+			holdViewSon.number = (ImageView) convertView
+					.findViewById(R.id.rank_numbler);
+			holdViewSon.fansnum = (TextView) convertView
+					.findViewById(R.id.rank_item_fansnum);
+			holdViewSon.fensi_layout = (LinearLayout) convertView
+					.findViewById(R.id.fensi_layout);
+			convertView.setTag(holdViewSon);
+		} else {
+			holdViewSon = (HoldViewSon) convertView.getTag();
+		}
+		holdViewSon.name.setText(ranks.get(groupPosition).get(childPosition)
+				.getNickname());
+		holdViewSon.id.setText(ranks.get(groupPosition).get(childPosition)
+				.getUser_id());
+		if (ranks.get(groupPosition).get(childPosition).getReceived_level() == null) {
+			APP.setCost_level(ranks.get(groupPosition).get(childPosition)
+					.getCost_level(), holdViewSon.level, context);
+		} else {
+			APP.setReceived_level(ranks.get(groupPosition).get(childPosition)
+					.getReceived_level(), holdViewSon.level, context);
+		}
+		String str1 = "";
+		if ("富豪".equals(mark_name)) {
+			str1 = APP.USER_BIG_LOGO_ROOT
+					+ ranks.get(groupPosition).get(childPosition).getIcon();
+			holdViewSon.fensi_layout.setVisibility(8);
+		} else {
+			str1 = APP.POST_URL_ROOT2
+					+ ranks.get(groupPosition).get(childPosition)
+							.getPoster_url2();
+			holdViewSon.fensi_layout.setVisibility(0);
+		}
+		mOptions = new DisplayImageOptions.Builder()
+				.showStubImage(R.drawable.user_icon_default).cacheInMemory()
+				.cacheOnDisc().build();
+		mImageLoader = ImageLoader.getInstance();
+		mImageLoader.init(ImageLoaderConfiguration.createDefault(context));
+		mImageLoader.displayImage(str1, holdViewSon.icon, mOptions);
+		holdViewSon.number.setImageResource(number[childPosition]);
+		holdViewSon.number.setBackgroundResource(rank_color[childPosition]);
+		holdViewSon.fansnum.setText(ranks.get(groupPosition).get(childPosition)
+				.getFans_num());
+		// 监听排行榜Item点击事件，（富豪榜跳到用户信息，主播榜跳到主播信息）
+		convertView.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(context, AnchorCenterActivity.class);
+				intent.putExtra("id",
+						ranks.get(groupPosition).get(childPosition)
+								.getUser_id());
+				context.startActivity(intent);
+			}
+		});
+		return convertView;
+	}
+
+	@Override
+	public int getChildrenCount(int groupPosition) {
+		// TODO Auto-generated method stub
+		return ranks.get(groupPosition).size();
+	}
+
+	@Override
+	public Object getGroup(int groupPosition) {
+		// TODO Auto-generated method stub
+		return title.get(groupPosition);
+	}
+
+	@Override
+	public int getGroupCount() {
+		// TODO Auto-generated method stub
+		return title.size();
+	}
+
+	@Override
+	public long getGroupId(int groupPosition) {
+		// TODO Auto-generated method stub
+		return groupPosition;
+	}
+
+	@Override
+	public View getGroupView(int groupPosition, boolean isExpanded,
+			View convertView, ViewGroup parent) {
+		// TODO Auto-generated method stub
+		HoldViewfather holderfather = null;
+		if (convertView == null) {
+			holderfather = new HoldViewfather();
+			convertView = LayoutInflater.from(context).inflate(
+					R.layout.rank_item_father, null);
+			holderfather.ranktitle = (TextView) convertView
+					.findViewById(R.id.rank_title);
+			holderfather.rankcontent = (TextView) convertView
+					.findViewById(R.id.rank_content);
+			convertView.setTag(holderfather);
+		} else {
+			holderfather = (HoldViewfather) convertView.getTag();
+		}
+		String title1 = title.get(groupPosition);
+		if (mark_name.equals("明星")) {
+			if ("日".equals(title1)) {
+				holderfather.ranktitle.setText("日榜：");
+				holderfather.rankcontent.setText("根据主播每日收到的礼物进行排行");
+
+			} else if ("周".equals(title1)) {
+				holderfather.ranktitle.setText("周榜：");
+				holderfather.rankcontent.setText("根据主播每周收到的礼物进行排行");
+			} else {
+				holderfather.ranktitle.setText("月榜：");
+				holderfather.rankcontent.setText("根据主播每月收到的礼物进行排行");
+			}
+			highlight(holderfather.rankcontent, new String[] { "每日收到", "每周收到",
+					"每月收到", "礼物" },
+					context.getResources().getColor(R.color.zi_huangse));
+		} else if (mark_name.equals("富豪")) {
+			if ("日".equals(title1)) {
+				holderfather.ranktitle.setText("日榜：");
+				holderfather.rankcontent.setText("根据用户每日获取经验进行排行");
+			} else if ("周".equals(title1)) {
+				holderfather.ranktitle.setText("周榜：");
+				holderfather.rankcontent.setText("根据用户每周获取经验进行排行");
+			} else {
+				holderfather.ranktitle.setText("月榜：");
+				holderfather.rankcontent.setText("根据用户每月获取经验进行排行");
+			}
+			highlight(holderfather.rankcontent, new String[] { "每日获取经验",
+					"每周获取经验", "每月获取经验" },
+					context.getResources().getColor(R.color.zi_huangse));
+		} else if (mark_name.equals("点播")) {
+			if ("日".equals(title1)) {
+				holderfather.ranktitle.setText("日榜：");
+				holderfather.rankcontent.setText("根据主播每日被点歌次数进行排行");
+			} else if ("周".equals(title1)) {
+				holderfather.ranktitle.setText("周榜：");
+				holderfather.rankcontent.setText("根据主播每周被点歌次数进行排行");
+			} else {
+				holderfather.ranktitle.setText("月榜：");
+				holderfather.rankcontent.setText("根据主播每月被点歌次数进行排行");
+			}
+			highlight(holderfather.rankcontent, new String[] { "每日被点歌次数",
+					"每周被点歌次数", "每月被点歌次数" },
+					context.getResources().getColor(R.color.zi_huangse));
+		} else if (mark_name.equals("人气")) {
+			if ("日".equals(title1)) {
+				holderfather.ranktitle.setText("日榜：");
+				holderfather.rankcontent.setText("根据主播每日收到的红豆数进行排行");
+			} else if ("周".equals(title1)) {
+				holderfather.ranktitle.setText("周榜：");
+				holderfather.rankcontent.setText("根据主播每周收到的红豆数进行排行");
+			} else {
+				holderfather.ranktitle.setText("月榜：");
+				holderfather.rankcontent.setText("根据主播每月收到的红豆数进行排行");
+			}
+			highlight(holderfather.rankcontent, new String[] { "每日收到", "每周收到",
+					"每月收到", "红豆数" },
+					context.getResources().getColor(R.color.zi_huangse));
+		}
+
+		return convertView;
+	}
+
+	@Override
+	public boolean hasStableIds() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isChildSelectable(int arg0, int arg1) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public class HoldViewfather {
+		TextView ranktitle;
+		TextView rankcontent;
+	}
+
+	public class HoldViewSon {
+		ImageView icon;
+		TextView name;
+		TextView id;
+		ImageView level;
+		ImageView number;
+		TextView fansnum;
+		LinearLayout fensi_layout;
+	}
+
+	/**
+	 * 关键字高亮显示
+	 * 
+	 * @param targets
+	 *            需要高亮的关键字
+	 */
+	public void highlight(TextView view, String[] targets, int color) {
+		String temp = view.getText().toString();
+		SpannableStringBuilder spannable = new SpannableStringBuilder(temp);
+		CharacterStyle span = null;
+
+		for (int i = 0; i < targets.length; i++) {
+			Pattern p = Pattern.compile(targets[i]);
+			Matcher m = p.matcher(temp);
+			while (m.find()) {
+				span = new ForegroundColorSpan(color);// 需要重复！
+				// span = new ImageSpan(drawable,ImageSpan.XX);//设置现在图片
+				spannable.setSpan(span, m.start(), m.end(),
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+			view.setText(spannable);
+		}
+	}
+
+}

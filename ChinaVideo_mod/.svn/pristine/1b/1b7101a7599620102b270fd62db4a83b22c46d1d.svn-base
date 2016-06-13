@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/my_content_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/white"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/liveroomview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+        <RelativeLayout
+            android:id="@+id/shipingquyu"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" >
+
+            <RelativeLayout
+                android:id="@+id/video_father"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/video_background" >
+
+                <RelativeLayout
+                    android:id="@+id/rl_video"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" >
+                    <SurfaceView
+                        android:id="@+id/video"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+                </RelativeLayout>
+
+                <ImageView
+                    android:id="@+id/video_background"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/video_background" />
+
+                <ImageView
+                    android:id="@+id/live_xiaolaohu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:paddingBottom="60dp"
+                    android:src="@drawable/room_tiger_loading" />
+
+                <TextView
+                    android:id="@+id/progress_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:paddingTop="50dp"
+                    android:text="客官莫急  马上就到"
+                    android:textColor="#360c0c"
+                    android:textSize="15sp" />
+
+                <ImageView
+                    android:id="@+id/red_addone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:src="@drawable/red_addone"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/yinpinmoshi_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:paddingTop="50dp"
+                    android:text="音频模式"
+                    android:textColor="#360c0c"
+                    android:textSize="16sp"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/room_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="5dp"
+                    android:padding="10dp"
+                    android:src="@drawable/video_back"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/video_more_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:orientation="vertical"
+                    android:visibility="gone" >
+
+                    <ImageView
+                        android:id="@+id/video_setting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:padding="10dp"
+                        android:src="@drawable/video_setting"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/video_shengyin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:padding="10dp"
+                        android:src="@drawable/video_shengyin" />
+
+                    <ImageView
+                        android:id="@+id/video_big"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:padding="10dp"
+                        android:src="@drawable/video_big" />
+
+                    <ImageView
+                        android:id="@+id/video_stop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:padding="10dp"
+                        android:src="@drawable/video_stop" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <com.zhipu.chinavideo.util.RunTextView
+                android:id="@+id/laba_run"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:background="@color/bantouming"
+                android:padding="5dp"
+                android:textColor="#ff730d"
+                android:textSize="15sp" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/fragment_view"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/input"
+            android:layout_below="@+id/shipingquyu"
+            android:orientation="vertical" >
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="40dp" >
+
+                <View
+                    android:id="@+id/line_guanzhu"
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:layout_toLeftOf="@+id/room_guanzhu"
+                    android:background="@color/qianhui" />
+
+                <RelativeLayout
+                    android:id="@+id/room_guanzhu"
+                    android:layout_width="60dp"
+                    android:layout_height="fill_parent"
+                    android:layout_alignParentRight="true"
+                    android:background="@color/title_bg" >
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:layout_centerHorizontal="true" >
+
+                        <ImageView
+                            android:id="@+id/guanzhu_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:src="@drawable/guanzhu_icon" />
+
+                        <TextView
+                            android:id="@+id/guanzhu_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_toRightOf="@+id/guanzhu_icon"
+                            android:text="关注"
+                            android:textColor="@color/white"
+                            android:textSize="13sp" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:id="@+id/room_guanzhu_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:textColor="@color/white"
+                        android:textSize="10sp" />
+                </RelativeLayout>
+
+                <com.zhipu.chinavideo.util.PagerSlidingTabStrip
+                    android:id="@+id/room_indicator"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_toLeftOf="@+id/line_guanzhu"
+                    android:background="@android:color/white"
+                    app:pstsDividerColor="@android:color/transparent"
+                    app:pstsIndicatorHeight="2dp"
+                    app:pstsShouldExpand="false"
+                    app:pstsTabBackground="@drawable/background_tab"
+                    app:pstsUnderlineHeight="0.0dp" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/qianhui" >
+            </View>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/room_viewpager"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="@color/qianhui" />
+        </LinearLayout>
+
+        <com.zhipu.chinavideo.util.RunTextView
+            android:id="@+id/xitongxiaoxi"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/shipingquyu"
+            android:layout_marginTop="40dp"
+            android:background="@color/bantouming"
+            android:padding="5dp"
+            android:textColor="#ff730d"
+            android:textSize="15sp" />
+
+        <RelativeLayout
+            android:id="@+id/gift_button"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginBottom="60dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/fast_sendgift_bg"
+            android:visibility="gone" >
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true" >
+
+                <ImageView
+                    android:id="@+id/fastsend_gift_img"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:background="#00000000"
+                    android:src="@drawable/loading_img" />
+
+                <TextView
+                    android:id="@+id/fastsend_gift_num"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/fastsend_gift_img"
+                    android:layout_centerHorizontal="true"
+                    android:textColor="@color/hotpink"
+                    android:visibility="gone" >
+                </TextView>
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/input"
+            android:layout_width="fill_parent"
+            android:layout_height="47dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/white"
+            android:visibility="gone" >
+
+            <View
+                android:id="@+id/input_line"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@drawable/bottom_background" />
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="47dp"
+                android:layout_below="@+id/input_line" >
+
+                <com.zhipu.chinavideo.util.CircularImage
+                    android:id="@+id/input_icon"
+                    android:layout_width="40dp"
+                    android:layout_height="fill_parent"
+                    android:layout_margin="4dp"
+                    android:src="@drawable/edit_icon" />
+
+                <View
+                    android:id="@+id/leftline"
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:layout_toRightOf="@+id/input_icon"
+                    android:background="@color/qianhui" >
+                </View>
+
+                <ImageView
+                    android:id="@+id/edit_laba"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@+id/leftline"
+                    android:src="@drawable/laba_one" />
+
+                <TextView
+                    android:id="@+id/input_et"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@+id/rightline"
+                    android:layout_toRightOf="@+id/edit_laba"
+                    android:ellipsize="end"
+                    android:singleLine="true"
+                    android:text="点击可以和主播聊天"
+                    android:textColor="@color/huise_zi"
+                    android:textSize="18dp" />
+
+                <View
+                    android:id="@+id/rightline"
+                    android:layout_width="1dp"
+                    android:layout_height="fill_parent"
+                    android:layout_toLeftOf="@+id/gift_icon"
+                    android:background="@color/qianhui" >
+                </View>
+
+                <ImageView
+                    android:id="@+id/gift_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_alignParentRight="true"
+                    android:padding="3dp"
+                    android:src="@drawable/icon_room_gift" />
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <ViewStub
+            android:id="@+id/ranklist_viewstub"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
+        </ViewStub>
+
+        <ViewStub
+            android:id="@+id/shouhulist_viewstub"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
+        </ViewStub>
+
+        <ViewStub
+            android:id="@+id/input_viewstub"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
+        </ViewStub>
+
+        <ViewStub
+            android:id="@+id/gift_viewstub"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@color/hotpink" >
+        </ViewStub>
+
+        <ViewStub
+            android:id="@+id/anchor_viewstub"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
+        </ViewStub>
+        <!-- 新增点歌ViewStub by zhongxf -->
+
+        <ViewStub
+            android:id="@+id/choose_song_viewstub"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
+        </ViewStub>
+
+        <ImageView
+            android:id="@+id/red_bean"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/red_bean"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+</RelativeLayout>

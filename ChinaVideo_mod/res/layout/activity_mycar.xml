@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/qianhui" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/btn_layout"
+        android:background="@color/white"
+        android:orientation="vertical" >
+
+        <include layout="@layout/title_back" />
+
+        <RelativeLayout
+            android:id="@+id/nocar_rl"
+            android:layout_width="fill_parent"
+            android:layout_height="80dp"
+            android:visibility="gone" >
+
+            <TextView
+                android:id="@+id/zj_ts"
+                android:layout_width="fill_parent"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:text="提示：座驾有效期从第一次使用时开始算起"
+                android:textColor="#848484" />
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="40dp"
+                android:layout_below="@+id/zj_ts"
+                android:gravity="center" >
+
+                <ImageView
+                    android:id="@+id/mycar_checkbox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/mycar_checkbox"
+                    android:text="不显示进场动画"
+                    android:textColor="#ff730d"
+                    android:textSize="16sp" />
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="10dp"
+                android:layout_alignParentBottom="true"
+                android:background="@color/qianhui" />
+        </RelativeLayout>
+
+        <ListView
+            android:id="@+id/mycar_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:divider="@color/qianhui"
+            android:dividerHeight="10dp"
+            android:listSelector="#00000000"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/mycar_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="15dp"
+            android:gravity="center_horizontal"
+            android:text="您还没有座驾，看看我们为您推荐的吧"
+            android:textColor="@color/hotpink"
+            android:visibility="gone" />
+
+        <GridView
+            android:id="@+id/mycar_grid"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:horizontalSpacing="3dp"
+            android:listSelector="#00000000"
+            android:numColumns="2"
+            android:verticalSpacing="3dp" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/btn_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="10dp"
+        android:background="@color/white" >
+
+        <TextView
+            android:id="@+id/buy_car"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/button_onclick_selected"
+            android:gravity="center|center_vertical"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:text="立即购买"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/more_car"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/button_onclick_selected"
+            android:gravity="center"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"
+            android:text="购买座驾"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+</RelativeLayout>

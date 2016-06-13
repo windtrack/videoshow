@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <com.zhipu.chinavideo.util.MyPhotoPageView
+            android:id="@+id/view_pager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+        </com.zhipu.chinavideo.util.MyPhotoPageView>
+		
+        <TextView
+            android:id="@+id/page_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="45dp"
+            android:text="11/25"
+            android:textColor="#ffffffff"
+            android:textSize="18sp" 
+            
+            android:visibility="gone"
+            />
+    </RelativeLayout>
+	 <include layout="@layout/title_clear_back" />
+    <LinearLayout
+        android:id="@+id/lineLayout_dianzan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical" >
+
+        <include layout="@layout/buttom_photo_like" />
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,259 @@
+package com.zhipu.chinavideo.adapter;
+
+import java.util.HashMap;
+import java.util.List;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import u.aly.co;
+import android.os.Handler;
+
+import com.zhipu.chinavideo.MobileVerification;
+import com.zhipu.chinavideo.R;
+import com.zhipu.chinavideo.entity.Tasks;
+import com.zhipu.chinavideo.util.APP;
+import com.zhipu.chinavideo.util.ThreadPoolWrap;
+import com.zhipu.chinavideo.util.Utils;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Message;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+public class TaskAdapter extends BaseAdapter {
+	private int[] icon = { R.drawable.task_xrbd, R.drawable.task_shd,
+			R.drawable.task_yzsj, R.drawable.task_qmz, R.drawable.task_smg,
+			R.drawable.task_gzzb, R.drawable.task_xrbd, R.drawable.task_xrbd,
+			R.drawable.task_xrbd, R.drawable.task_xrbd, R.drawable.task_wccz };
+	private Context context;
+	private List<Tasks> task;
+	private Button localbutton;
+	private Dialog dialog;
+	HashMap<Integer, View> lmap = new HashMap<Integer, View>();
+
+	public TaskAdapter(Context context, List<Tasks> task) {
+		super();
+		this.context = context;
+		this.task = task;
+	}
+
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return task.size();
+	}
+
+	@Override
+	public Object getItem(int arg0) {
+		// TODO Auto-generated method stub
+		return task.get(arg0);
+	}
+
+	@Override
+	public long getItemId(int arg0) {
+		// TODO Auto-generated method stub
+		return arg0;
+	}
+
+	@Override
+	public View getView(final int position, View convertView, ViewGroup arg2) {
+		// TODO Auto-generated method stub
+		ViewHolder holder = null;
+		if (lmap.get(position) == null) {
+			holder = new ViewHolder();
+			convertView = LayoutInflater.from(context).inflate(
+					R.layout.item_task, null);
+			holder.task_cir = (ImageView) convertView
+					.findViewById(R.id.task_img);
+			holder.task_name = (TextView) convertView
+					.findViewById(R.id.task_name);
+			holder.task_lb = (TextView) convertView.findViewById(R.id.task_get);
+			holder.get_reward = (Button) convertView
+					.findViewById(R.id.get_reward);
+			holder.task_isget = (ImageView) convertView
+					.findViewById(R.id.task_isget);
+			holder.item_task_bg = (RelativeLayout) convertView
+					.findViewById(R.id.item_task_bg);
+			holder.list_btm = convertView.findViewById(R.id.list_btm);
+			holder.list_top = convertView.findViewById(R.id.list_top);
+			lmap.put(position, convertView);
+			convertView.setTag(holder);
+		} else {
+			convertView = lmap.get(position);
+			holder = (ViewHolder) convertView.getTag();
+		}
+		holder.task_name.setText(task.get(position).getName());
+		JSONObject obj;
+		try {
+			obj = new JSONObject(task.get(position).getAward());
+			String beans = obj.getString("beans");
+			holder.task_lb.setText("奖励:" + beans);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (task.get(position).getStatus() == null
+				|| task.get(position).getStatus().equals("0")) {
+			holder.get_reward.setVisibility(View.GONE);
+		} else if (task.get(position).getStatus().equals("1")) {
+			holder.task_isget.setVisibility(0);
+			holder.get_reward.setText("  领取  ");
+			holder.get_reward.setBackgroundResource(R.drawable.button_bg_shape);
+			// 已经完成的任务，但是还没有领取奖励，现在点击领取奖励。
+			SharedPreferences preferences = context.getSharedPreferences(
+					APP.MY_SP, Context.MODE_PRIVATE);
+			final String user_id = preferences.getString(APP.USER_ID, "");
+			final String secret = preferences.getString(APP.SECRET, "");
+			holder.get_reward.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View arg0) {
+					// TODO Auto-generated method stub
+					// 领取礼物
+					String id = task.get(position).getId();
+					GetTask_reward(user_id, secret, id, arg0);
+				}
+			});
+		} else if (task.get(position).getStatus().equals("2")) {
+			holder.task_isget.setVisibility(0);
+			holder.get_reward.setText("已领取");
+			holder.get_reward
+					.setBackgroundResource(R.drawable.getok_button_shape);
+		}
+		if (position < icon.length) {
+			holder.task_cir.setImageResource(icon[position]);
+		}
+		if (position == 0) {
+			holder.list_btm.setVisibility(0);
+			holder.list_top.setVisibility(0);
+		}
+		return convertView;
+	}
+
+	class ViewHolder {
+		ImageView task_cir;
+		TextView task_name;
+		TextView task_lb;
+		Button get_reward;
+		ImageView task_isget;
+		RelativeLayout item_task_bg;
+		View list_btm;
+		View list_top;
+	}
+
+	/**
+	 * 点击按钮领取完成任务的奖励
+	 */
+	private void GetTask_reward(final String userId, final String secret,
+			final String task_id, final View view) {
+		dialog = Utils.showProgressDialog((Activity) context, "进行中", true);
+		dialog.show();
+		Runnable gettask_rewardrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.gettask_reward(userId, secret,
+							task_id, "web", "0");
+//					Log.i("lvjian", "result------renwu--------->" + result);
+					JSONObject obj = new JSONObject(result);
+					String data = obj.getString("data");
+					int s = obj.getInt("s");
+					if (s == 1) {
+						Message msg = new Message();
+						msg.what = 1;
+						msg.obj = "领取成功！";
+						localbutton = (Button) view;
+						mhandler.sendMessage(msg);
+					} else {
+						Message msg = new Message();
+						msg.what = 2;
+						msg.obj = data;
+						mhandler.sendMessage(msg);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+					mhandler.sendEmptyMessage(3);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(gettask_rewardrun);
+	}
+	private int dialogType ;//-1 默认  1验证手机
+	private Handler mhandler = new Handler() {
+		public void handleMessage(Message msg) {
+			dialogType = -1 ;
+			switch (msg.what) {
+			case 1:
+				dialog.dismiss();
+				// 领取成功后刷新列表进行一系列处理
+				localbutton.setText("已领取");
+				localbutton
+						.setBackgroundResource(R.drawable.getok_button_shape);
+				String res1 = msg.obj.toString();
+				ShowMsg(res1);
+				break;
+			case 2:
+				dialogType = 1 ;
+				dialog.dismiss();
+				String res = msg.obj.toString();
+				ShowMsg(res);
+				break;
+			case 3:
+				dialog.dismiss();
+				ShowMsg("领取失败");
+				break;
+			default:
+				break;
+			}
+		};
+	};
+
+	private void ShowMsg(String msg) {
+		final AlertDialog localAlertDialog = new AlertDialog.Builder(context)
+				.create();
+		localAlertDialog.show();
+		Window localWindow = localAlertDialog.getWindow();
+		View localView = ((Activity) context).getLayoutInflater().inflate(
+				R.layout.dialog_layout, null);
+		Button quxiao = (Button) localView.findViewById(R.id.quxiao);
+		TextView moneynotenoth_title = (TextView) localView
+				.findViewById(R.id.moneynotenoth_title);
+		moneynotenoth_title.setText(msg);
+		Button queding = (Button) localView.findViewById(R.id.queding);
+		quxiao.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				localAlertDialog.dismiss();
+			}
+		});
+		queding.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				localAlertDialog.dismiss();
+				if(dialogType == 1){
+//					context.startActivity(new Intent(context,));
+					Intent intent1 = new Intent(context,
+							MobileVerification.class);
+					context.startActivity(intent1);
+				}
+			}
+		});
+		localWindow.setContentView(localView);
+	}
+}

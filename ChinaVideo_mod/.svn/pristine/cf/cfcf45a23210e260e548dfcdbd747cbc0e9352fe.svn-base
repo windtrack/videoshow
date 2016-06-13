@@ -1,0 +1,309 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_gift"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/layout_gift_rl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/gift_num_input_rl" >
+
+        <View
+            android:id="@+id/gift_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/gifttitle_linearlayout"
+            android:layout_alignParentTop="true"
+            android:background="@color/transparent" >
+        </View>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_above="@+id/gifttitle_linearlayout"
+            android:background="@color/gifttitleline" />
+
+        <RelativeLayout
+            android:id="@+id/gifttitle_linearlayout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_above="@+id/gifttitleline"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <HorizontalScrollView
+                android:id="@+id/scrollview"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_toLeftOf="@+id/title_hengxian"
+                android:scrollbars="none" >
+
+                <LinearLayout
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/white"
+                    android:orientation="vertical" >
+
+                    <LinearLayout
+                        android:id="@+id/gitftitletext"
+                        android:layout_width="match_parent"
+                        android:gravity="center_vertical"
+                        android:layout_height="38dp"
+                        android:orientation="horizontal" >
+                    </LinearLayout>
+
+                    <TextView
+                        
+                    android:id="@+id/indicateId"
+                    android:layout_width="70dp"
+                    android:layout_height="2dp"
+                    android:background="@color/gitf_btn" />
+                    
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:id="@+id/title_hengxian"
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_toLeftOf="@+id/cangku_title"
+                android:background="@color/gifttitleline"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/cangku_title"
+                android:layout_width="60dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:background="@color/white"
+                android:cursorVisible="false"
+                android:gravity="center_horizontal|center_vertical|center"
+                android:text="仓库"
+                android:textColor="@color/black"
+                android:textSize="18dp" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/gifttitleline"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_above="@+id/gift_viewpager"
+            android:background="@color/gifttitleline"
+            android:orientation="horizontal" />
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/gift_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:layout_above="@+id/balance_layout"
+            android:background="@color/gifttab_bg" >
+        </android.support.v4.view.ViewPager>
+
+        <LinearLayout
+            android:id="@+id/viewGroup"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/balance_layout"
+            android:layout_marginBottom="5dp"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal" >
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/balance_layout"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_above="@+id/liner"
+            android:background="@color/white"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/balance_incon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="0.1"
+                android:src="@drawable/lebi" />
+
+            <TextView
+                android:id="@+id/balance_text_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="5dp"
+                android:layout_weight="0.1"
+                android:text="余额："
+                android:textColor="@color/button_bg_nomal"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/balance_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="0.1"
+                android:text="0"
+                android:textColor="@color/balance_num"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/recharge_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="0.3"
+                android:background="@color/white"
+                android:drawableRight="@drawable/arrow_right"
+                android:text="去充值"
+                android:textColor="@color/button_bg_nomal"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/liner"
+            android:layout_width="match_parent"
+            android:layout_height="0.3dp"
+            android:layout_above="@+id/gift_bottom"
+            android:background="@color/button_bg_nomal" />
+
+        <RelativeLayout
+            android:id="@+id/gift_loadding_view"
+            android:layout_width="match_parent"
+            android:layout_height="190dp"
+            android:layout_above="@+id/gift_bottom"
+            android:background="@color/white"
+            android:visibility="gone" >
+
+            <include
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                layout="@layout/livehall_loading" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/gift_bottom"
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/white"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
+
+            <LinearLayout
+                android:layout_width="70dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginLeft="5dp"
+                    android:gravity="center_vertical"
+                    android:text="数量："
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/gift_num_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:background="@drawable/textview_bg"
+                    android:gravity="center"
+                    android:inputType="text"
+                    android:textColor="@color/white"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="70dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginLeft="10dp"
+                    android:gravity="center_vertical"
+                    android:text="赠："
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/send_gift_to"
+                    android:layout_width="match_parent"
+                    android:layout_height="36dp"
+                    android:layout_marginRight="5dp"
+                    android:background="@drawable/textview_bg"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/send_gift"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:layout_marginRight="5dp"
+                android:background="@drawable/recharge_btn"
+                android:gravity="center"
+                android:text="赠送"
+                android:textColor="@color/gitf_btn"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/gift_num_input_rl"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/giftnum_top"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_above="@+id/gift_num_input_rl1"
+            android:background="@color/transparent" />
+
+        <RelativeLayout
+            android:id="@+id/gift_num_input_rl1"
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/highlight"
+            android:padding="8dp" >
+
+            <EditText
+                android:id="@+id/edit_shuru_num"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_toLeftOf="@+id/num_input_sure"
+                android:background="@drawable/input_zise"
+                android:paddingLeft="5dp"
+                android:singleLine="true" />
+
+            <TextView
+                android:id="@+id/num_input_sure"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:background="@drawable/button_bg_shape"
+                android:gravity="center"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:text="确定"
+                android:textColor="@color/white" />
+        </RelativeLayout>
+    </RelativeLayout>
+
+</RelativeLayout>

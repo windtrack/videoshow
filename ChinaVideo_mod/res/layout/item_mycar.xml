@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/white" >
+
+    <RelativeLayout
+        android:id="@+id/maycar_icon_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginTop="20dp" >
+
+        <ImageView
+            android:id="@+id/mycar_item_icon"
+            android:layout_width="100dp"
+            android:layout_height="90dp"
+            android:src="@drawable/loading_img" />
+
+        <TextView
+            android:id="@+id/end_time"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mycar_item_icon"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="有效期至:2015.6.31"
+            android:textColor="@color/huise_zi"
+            android:textSize="12sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="15dp"
+        android:layout_toRightOf="@+id/maycar_icon_layout" >
+
+        <TextView
+            android:id="@+id/mycar_item_tv1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="价格:500万/月"
+            android:textColor="#848484"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/mycar_item_tv2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mycar_item_tv1"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:text="续费9折"
+            android:textColor="#d34141"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/mycar_item_tv3"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mycar_item_tv2"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/button_bg_shape"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="续费"
+            android:textColor="@color/white"
+            android:textSize="15sp" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/mycar_guoqi_lala"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:src="@drawable/mycar_outtime" />
+
+</RelativeLayout>

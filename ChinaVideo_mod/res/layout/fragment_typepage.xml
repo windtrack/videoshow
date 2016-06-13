@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#eeeeec" >
+
+    <com.handmark.pulltorefresh.library.PullToRefreshListView
+        xmlns:PullToRefresh="http://schemas.android.com/apk/res/com.ninexiu.sixninexiu"
+        android:id="@+id/typepage_lv_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:cacheColorHint="#00000000"
+        android:divider="@null"
+        android:fadingEdge="none"
+        android:fadingEdgeLength="0.0dip"
+        android:footerDividersEnabled="false"
+        android:headerDividersEnabled="false"
+        android:listSelector="@android:color/transparent" />
+
+    <include
+        android:id="@+id/typepage_loading_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        layout="@layout/livehall_loading"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/typepager_nowifi"
+        layout="@layout/no_network"
+        android:visibility="gone" />
+
+</FrameLayout>

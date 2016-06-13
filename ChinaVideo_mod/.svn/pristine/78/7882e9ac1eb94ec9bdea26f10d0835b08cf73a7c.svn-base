@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/white_cor_bg"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="3dp" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20.0dip" >
+
+        <TextView
+            android:id="@+id/network_dialog_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="12.0dip"
+            android:gravity="center"
+            android:textColor="#ff000000"
+            android:textSize="16.0sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1.0px"
+        android:background="#ffcccccc" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/network_dialog_button"
+            android:layout_width="0.0dip"
+            android:layout_height="48.0dip"
+            android:layout_weight="1.0"
+            android:background="@color/white"
+            android:textColor="@color/title_bg" />
+    </LinearLayout>
+
+</LinearLayout>

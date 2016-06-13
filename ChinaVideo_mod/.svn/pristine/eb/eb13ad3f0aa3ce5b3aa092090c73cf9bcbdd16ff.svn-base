@@ -1,0 +1,7 @@
+package com.zhipu.chinavideo.entity;
+
+//照片墙
+public class OnePhoto{
+	public String url ;
+	public int id ;
+}

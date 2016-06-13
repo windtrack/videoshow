@@ -1,0 +1,1411 @@
+package com.zhipu.chinavideo.manager;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.InputType;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewStub;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.zhipu.chinavideo.GuardActivity;
+import com.zhipu.chinavideo.LiveRoomActivity;
+import com.zhipu.chinavideo.LoginActivity;
+import com.zhipu.chinavideo.R;
+import com.zhipu.chinavideo.adapter.GiftPopWindowAdapter;
+import com.zhipu.chinavideo.db.GlobalData;
+import com.zhipu.chinavideo.entity.Category;
+import com.zhipu.chinavideo.entity.Gift;
+import com.zhipu.chinavideo.fragment.CanKuFragment;
+import com.zhipu.chinavideo.fragment.GiftFragment;
+import com.zhipu.chinavideo.fragment.Giftfragment_hongdou;
+import com.zhipu.chinavideo.rechargecenter.RechargeActivity;
+import com.zhipu.chinavideo.rpc.RpcEvent;
+import com.zhipu.chinavideo.util.APP;
+import com.zhipu.chinavideo.util.ConsumpUtil;
+import com.zhipu.chinavideo.util.ThreadPoolWrap;
+import com.zhipu.chinavideo.util.Utils;
+
+@SuppressLint("ResourceAsColor")
+public class GiftManager implements View.OnClickListener {
+	private int type = 1;
+	private boolean isshowing = false;
+	private View giftview;
+	private static GiftManager instance;
+	private Context context;
+	private ViewStub viewstub_gift;
+	private ViewPager gift_viewpager;
+	private FragmentActivity localActivity;
+	private GiftAdapter adapter;
+	private SharedPreferences sharedPreferences;
+	private List<Gift> gift_list;
+	private List<Gift> Gs;
+	private EditText gift_num_edit;
+	private PopupWindow gift_pop;
+	private GiftPopWindowAdapter gift_pop_adapter;
+	private RelativeLayout gift_layout;
+	private TextView send_gift_to;
+	private LinearLayout gift_title_layout;
+	private View gift_view;
+	private RelativeLayout input_layout;
+	private String anchor_id;
+	private String room_id;
+	private Button send_gift;//赠送按钮
+	private ImageView[] imageViews;
+	private ImageView imageView;
+	private List<Category> cate_list = new ArrayList<Category>();
+	private int viewpagersize = 0;
+	private View gift_loadding_view;
+	private String anchor_name;
+	// 刚开始的红豆数
+	private String hearts_num;
+	// 目标用户id，目标用户昵称
+	private String send_to_id;
+	private String send_to_name1;
+	private RelativeLayout gift_button;
+	private ImageView fastsend_gift_img;
+	private TextView fastsend_gift_num;
+	public DisplayImageOptions mOptions;
+	private ImageLoader mImageLoader = null;
+	private ViewPager tabviewpager;
+	private int is_guard = 0;
+	private InputMethodManager imm;
+	private RelativeLayout gift_num_input_rl;
+	private RelativeLayout layout_gift_rl;
+	private EditText edit_shuru_num;
+	private TextView num_input_sure, giftnum_top;
+
+	private GiftAdapter mAdatper;
+	private LinearLayout gitftitletext;
+	private JSONArray giftslist;
+	private RelativeLayout gifttitle_layout;
+	private TextView balance_text, cangku_title, indicateTV;
+	private LinearLayout.LayoutParams indicateParams;
+	private static boolean isCangku = false;
+	private HorizontalScrollView scrollview;
+	private int columnSelectIndex = 0;
+	/** 屏幕宽度 */
+	private int mScreenWidth = 0;
+	/** Item宽度 */
+	private int mItemWidth = 0;
+
+	boolean isOpenGift ;//礼物是否需要打开
+	public static GiftManager getInstance() {
+		if (instance == null) {
+			instance = new GiftManager();
+		}
+		return instance;
+	}
+
+	public void exit() {
+		instance = null;
+	}
+
+	public void initGiftManager(Context context, ViewStub viewstub_gift,
+			RelativeLayout input_layout, String anchor_id, String room_id,
+			String anchor_name, RelativeLayout gift_button,
+			ImageView fastsend_gift_img, TextView fastsend_gift_num,
+			ViewPager tabviewpager, int is_guard) {
+		this.context = context;
+		this.viewstub_gift = viewstub_gift;
+		this.input_layout = input_layout;
+		this.gift_button = gift_button;
+		this.anchor_id = anchor_id;
+		this.room_id = room_id;
+		this.anchor_name = anchor_name;
+		this.fastsend_gift_img = fastsend_gift_img;
+		this.fastsend_gift_num = fastsend_gift_num;
+		this.is_guard = is_guard;
+		this.tabviewpager = tabviewpager;
+		sharedPreferences = context.getSharedPreferences(APP.MY_SP,
+				Context.MODE_PRIVATE);
+	}
+
+	public void showgiftView(int showgifttype, String send_to_id,
+			String send_to_name) {
+
+		if (Utils.isEmpty(send_to_id)) {
+			this.send_to_id = anchor_id;
+		} else {
+			this.send_to_id = send_to_id;
+		}
+		if (Utils.isEmpty(send_to_name)) {
+			this.send_to_name1 = anchor_name;
+		} else {
+			this.send_to_name1 = send_to_name;
+		}
+		type = showgifttype;
+		isshowing = true;
+		// 设置显示聊天
+		tabviewpager.setCurrentItem(0);
+		if (giftview == null) {
+			this.viewstub_gift.setLayoutResource(R.layout.gift_layout);
+			this.giftview = this.viewstub_gift.inflate();
+			findviewbyid();
+		} else {
+			this.giftview.setVisibility(0);
+			send_gift_to.setText(send_to_name1);
+			if (type == 3) {
+				if (imageView != null && imageViews.length > 0) {
+					gift_viewpager.setCurrentItem(imageViews.length - 1);
+				}
+			}
+		}
+		// 发送礼物刷新乐币方法
+		showBeans();
+	}
+
+	public void gonegiftview() {
+		// 发送礼物刷新乐币方法
+		showBeans();
+		isshowing = false;
+		if ((this.giftview != null) && (this.giftview.getVisibility() == 0)) {
+			Animation animation = AnimationUtils.loadAnimation(context,
+					R.anim.input_exit);
+			giftview.startAnimation(animation);
+			this.giftview.setVisibility(8);
+			if (type == 1) {
+				input_layout.setVisibility(0);
+			}
+		}
+	}
+
+	private void findviewbyid() {
+		// TODO Auto-generated method stub
+		localActivity = (FragmentActivity) this.context;
+		gift_viewpager = (ViewPager) giftview.findViewById(R.id.gift_viewpager);
+		cangku_title = (TextView) giftview.findViewById(R.id.cangku_title);
+		gifttitle_layout = (RelativeLayout) giftview
+				.findViewById(R.id.gifttitle_linearlayout);
+		scrollview = (HorizontalScrollView) giftview
+				.findViewById(R.id.scrollview);
+		send_gift_to = (TextView) giftview.findViewById(R.id.send_gift_to);
+		gift_layout = (RelativeLayout) localActivity
+				.findViewById(R.id.layout_gift);
+		gift_num_edit = (EditText) giftview.findViewById(R.id.gift_num_edit);
+		gift_num_edit.setText("1");
+		gitftitletext = (LinearLayout) giftview
+				.findViewById(R.id.gitftitletext);
+		indicateTV = (TextView) giftview.findViewById(R.id.indicateId);
+		indicateParams = (LinearLayout.LayoutParams) indicateTV
+				.getLayoutParams();
+
+		mScreenWidth = getWindowsWidth(this.localActivity);
+		mItemWidth = mScreenWidth / 5;
+		balance_text = (TextView) giftview.findViewById(R.id.balance_text);
+		gift_view = (View) localActivity.findViewById(R.id.gift_view);
+		gift_view.setOnClickListener(this);
+		send_gift = (Button) localActivity.findViewById(R.id.send_gift);
+	
+		giftnum_top = (TextView) localActivity.findViewById(R.id.giftnum_top);
+		giftnum_top.setOnClickListener(this);
+		gift_num_input_rl = (RelativeLayout) localActivity
+				.findViewById(R.id.gift_num_input_rl);
+		layout_gift_rl = (RelativeLayout) localActivity
+				.findViewById(R.id.layout_gift_rl);
+		edit_shuru_num = (EditText) localActivity
+				.findViewById(R.id.edit_shuru_num);
+		num_input_sure = (TextView) localActivity
+				.findViewById(R.id.num_input_sure);
+		num_input_sure.setOnClickListener(this);
+		send_gift.setOnClickListener(this);
+		gift_loadding_view = localActivity
+				.findViewById(R.id.gift_loadding_view);
+		creatPopWindow();
+		gift_num_edit.setCursorVisible(false);
+		gift_num_edit.setInputType(InputType.TYPE_NULL);
+		gift_num_edit.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				switch (event.getAction()) {
+				case MotionEvent.ACTION_UP:
+					
+					gift_pop.showAtLocation(gift_layout, Gravity.LEFT
+							| Gravity.BOTTOM, 20, 80);
+					break;
+				default:
+					break;
+				}
+				return true;
+			}
+		});
+		// 获取礼物数据
+		gift_loadding_view.setVisibility(0);
+		// 获取礼物
+		Get_present_list();
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+
+		case R.id.gift_view:
+			gonegiftview();
+			break;
+		// 发送礼物按钮
+		case R.id.send_gift:
+			// 判断用户的钱够不够
+			String beans = sharedPreferences.getString(APP.BEANS, "");
+			String price = sharedPreferences.getString(APP.GIFT_PRICE_CURREN,"");
+			String num = gift_num_edit.getText().toString();
+			BigDecimal user_beans = null ;
+			
+			
+			int giftnum = 0;
+			int giftprice = 0;
+			if (!Utils.isEmpty(beans) && Utils.isInteger(beans)) {
+				user_beans = ConsumpUtil.parseBigDecimal(beans);
+			}
+			if (!Utils.isEmpty(num) && Utils.isInteger(num)) {
+				giftnum = Integer.parseInt(num);
+			}
+			if (!Utils.isEmpty(price) && Utils.isInteger(price)) {
+				giftprice = Integer.parseInt(price);
+			}
+
+			BigDecimal gift_beans  = ConsumpUtil.parseBigDecimal((giftnum * giftprice)+"");
+			
+			boolean canBuy = false ;
+			if(user_beans !=null &&user_beans.compareTo(gift_beans)>=0){
+				canBuy = true ;
+			}	
+			
+			
+			String id = sharedPreferences.getString(APP.GIFT_ID_CURRENT, "");
+			String is_fromback = sharedPreferences.getString(APP.GIFT_FROM_CURRENT, "");
+			// 1.判断是否是红豆 2.判断是否从仓库赠送
+			// 判断是否是红豆
+			// 判断是否是特权礼物
+			if (Utils.isEmpty(is_fromback)) {
+				if ("100000".equals(id)) {
+					SendHearts(gift_num_edit.getText().toString(), "0");
+				} else if ("1704".equals(id) || "1705".equals(id)|| "1702".equals(id)) {
+					// 特权礼物
+					if (is_guard == 1) {
+						if (canBuy) {
+							SendGift("0");
+						} else {
+							Utils.Moneynotenough(context, "余额不足！", room_id);
+						}
+					} else {
+						tequanliwu("您不是守护，不能赠专属礼物！");
+					}
+				} else {
+					if (canBuy) {
+						SendGift("0");
+					} else {
+						Utils.Moneynotenough(context, "余额不足！", room_id);
+					}
+				}
+			} else {
+				if ("1".equals(is_fromback)) {
+					if ("100000".equals(id)) {
+						SendHearts(gift_num_edit.getText().toString(), "1");
+					}else if("700042".equals(id)){
+						showOpenGiftTips() ;
+					} else {
+						
+						SendGift("1");
+					}
+				} else {
+					if ("100000".equals(id)) {
+						SendHearts(gift_num_edit.getText().toString(), "0");
+					} else if ("1704".equals(id) || "1705".equals(id)
+							|| "1702".equals(id)) {
+						// 特权礼物
+						if (is_guard == 1) {
+							if (canBuy) {
+								SendGift("0");
+							} else {
+								Utils.Moneynotenough(context, "余额不足！", room_id);
+							}
+						} else {
+							tequanliwu("您不是守护，不能赠专属礼物！");
+						}
+					} else {
+						if (canBuy) {
+							SendGift("0");
+						} else {
+							Utils.Moneynotenough(context, "余额不足！", room_id);
+						}
+					}
+				}
+			}
+			break;
+		// 数量确定
+		case R.id.num_input_sure:
+			
+			if (Utils.isEmpty(edit_shuru_num.getText().toString())) {
+				Utils.showToast(context, "请输入数目");
+			} else if (edit_shuru_num.getText().toString().length() > 5) {
+				Utils.showToast(context, "数目过大");
+			} else if (Integer.parseInt(edit_shuru_num.getText().toString()) < 1) {
+				Utils.showToast(context, "您输入的数目不合理");
+			} else {
+				gift_num_edit.setText(edit_shuru_num.getText().toString());
+				layout_gift_rl.setVisibility(0);
+				gift_num_input_rl.setVisibility(8);
+				// 如果输入法弹出状态，关闭输入法
+				if (Utils.getinputisshow(context, edit_shuru_num)) {
+					Utils.hintKbTwo(context);
+				}
+			}
+			break;
+		case R.id.giftnum_top:
+			// 如果输入法弹出状态，关闭输入法
+			layout_gift_rl.setVisibility(0);
+			gift_num_input_rl.setVisibility(8);
+			if (Utils.getinputisshow(context, edit_shuru_num)) {
+				Utils.hintKbTwo(context);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	class GiftAdapter extends FragmentStatePagerAdapter {
+		private FragmentManager fm;
+		private List<Gift> list;
+		private boolean isCangku;
+
+		public GiftAdapter(FragmentManager fm, List<Gift> list, boolean isCangku) {
+			super(fm);
+			this.fm = fm;
+			this.list = list;
+			this.isCangku = isCangku;
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			if (isCangku) {
+				return CanKuFragment.getIntance(context, list, position);
+			} else {
+				return GiftFragment.getIntance(context, list, position);
+			}
+
+		}
+
+		@Override
+		public int getCount() {
+			return (viewpagersize);
+		}
+
+		@Override
+		public int getItemPosition(Object object) {
+			return POSITION_NONE;
+		}
+
+		@Override
+		public void notifyDataSetChanged() {
+			super.notifyDataSetChanged();
+		}
+
+		public void setAdapter(FragmentManager fm, List<Gift> mlist,
+				boolean isCangku) {
+			this.fm = fm;
+			this.list = mlist;
+			this.isCangku = isCangku;
+			notifyDataSetChanged();
+		}
+
+	}
+
+	/**
+	 * 获取礼物列表信息
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	private void Get_present_list() {
+		gift_list = new ArrayList<Gift>();
+
+		Runnable getpresentlistrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.get_present_list(
+							sharedPreferences.getString(APP.USER_ID, ""),
+							sharedPreferences.getString(APP.SECRET, ""));
+					JSONObject obj = new JSONObject(result);
+					int state = obj.getInt("s");
+					if (state == 1) {
+						giftslist = obj.getJSONArray("data");
+						// 礼物分类
+						for (int i = 0; i < giftslist.length(); i++) {
+							JSONObject catehoryObj = (JSONObject) giftslist
+									.get(i);
+							Category category = new Category();
+							category.setId(catehoryObj.getString("id"));
+							category.setName(catehoryObj.getString("name"));
+							category.setSort_index(catehoryObj
+									.getString("sort_index"));
+							cate_list.add(category);
+						}
+						handler.sendEmptyMessage(1);
+
+					} else {
+						handler.sendEmptyMessage(2);
+					}
+				} catch (JSONException e) {
+					handler.sendEmptyMessage(2);
+					e.printStackTrace();
+					Log.i("lvjian", "----------------获取礼物异常----------------");
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(getpresentlistrun);
+	}
+
+	private static final int M_HandlerCmd_OpenGiftSuccess = 85 ;
+	private static final int M_HandlerCmd_OpenGiftFailed= 86 ;
+	
+	
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			String a = "";
+			switch (msg.what) {
+			case M_HandlerCmd_OpenGiftFailed:
+			{
+				Utils.showToast(context, "打开礼包失败");
+			}
+				break ;
+			case M_HandlerCmd_OpenGiftSuccess:
+			{
+				
+				String tips = msg.obj.toString();
+//				Utils.showToast(context, tips);
+				showTips(tips) ;
+			}
+				break ;
+			// 获取礼物成功
+			case 1:
+				gift_loadding_view.setVisibility(8);
+				initgiftviewpager();
+				break;
+			// 获取礼物列表失败
+			case 2:
+				gift_loadding_view.setVisibility(8);
+				gifttitle_layout.setVisibility(8);
+				gift_viewpager.setVisibility(8);
+				showBeans();
+				giftview.findViewById(R.id.recharge_btn).setOnClickListener(
+						new OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								Intent in = new Intent(localActivity,
+										GuardActivity.class);
+								in.putExtra("room_id", room_id);
+								in.putExtra("anchor_id", anchor_id);
+								localActivity.startActivity(in);
+							}
+						});
+				break;
+			// 发送礼物成功
+			case 3:
+				gonegiftview();
+				break;
+			// 发送礼物失败
+			case 4:
+				Log.i("lvjian", "---------发送礼物失败了--------");
+				gonegiftview();
+				String data = (String) msg.obj;
+				if (data == null || data.equals("")) {
+					Utils.showToast(context, "赠送失败！");
+				} else {
+					Utils.showToast(context, data);
+				}
+
+				// Utils.Moneynotenough(context, data);
+				break;
+			// 获取红豆成功，设置红豆的数量
+			case 5:
+				String hearts = (String) msg.obj;
+				hearts_num = hearts;
+				Giftfragment_hongdou.rushadapter(hearts);
+				break;
+			case 6:
+				// Utils.showToast(context, "获取红豆失败");
+				break;
+			case 7:
+				String hearts_send = (String) msg.obj;
+				// 发送红豆成功
+				Giftfragment_hongdou.rushadapter(hearts_send);
+				// 发送红豆成功播放动画
+				LiveRoomActivity.startdonghua();
+				gonegiftview();
+				break;
+			case 8:
+				String msgstring = (String) msg.obj;
+				Utils.showToast(context, msgstring);
+				break;
+			// 从仓库发送礼物或者红豆成功后，刷新页面
+			case 9:
+				createCankuGift();
+				gonegiftview();
+				break;
+			case 10:
+				// 发送礼物刷新乐币方法
+				showBeans();
+				fastsend_gift_num.setText(sharedPreferences.getString(
+						APP.FAST_GIFTNUM, ""));
+				gift_button.setVisibility(0);
+				mOptions = new DisplayImageOptions.Builder()
+						.showStubImage(R.drawable.icon_liwu_on).cacheInMemory()
+						.cacheOnDisc().build();
+				mImageLoader = ImageLoader.getInstance();
+				mImageLoader.init(ImageLoaderConfiguration
+						.createDefault(context));
+				mImageLoader.displayImage(
+						APP.GIFT_PATH
+								+ sharedPreferences.getString(
+										APP.FAST_GIFTICON, ""),
+						fastsend_gift_img, mOptions);
+				break;
+
+			case 11:
+				viewpagersize = Gs.size() % 8 == 0 ? Gs.size() / 8
+						: (Gs.size() / 8 + 1);
+				initCirclePoint();
+				if (mAdatper != null) {
+					mAdatper = null;
+				}
+				mAdatper = new GiftAdapter(
+						localActivity.getSupportFragmentManager(), Gs, isCangku);
+				gift_viewpager.setAdapter(mAdatper);
+
+				gift_viewpager
+						.setOnPageChangeListener(new OnPageChangeListener() {
+							@Override
+							public void onPageSelected(int arg0) {
+								// 重新设置原点布局集合
+								if (imageViews.length == 1) {
+									imageViews[0]
+											.setBackgroundResource(R.drawable.dot_red);
+									return;
+								} else if (imageViews.length >= arg0) {
+									for (int i = 0; i < imageViews.length; i++) {
+										imageViews[arg0]
+												.setBackgroundResource(R.drawable.dot_red);
+										if (arg0 != i) {
+											imageViews[i]
+													.setBackgroundResource(R.drawable.dot_white);
+										}
+									}
+								}
+							}
+
+							@Override
+							public void onPageScrolled(int arg0, float arg1,
+									int arg2) {
+								// TODO Auto-generated method stub
+							}
+
+							@Override
+							public void onPageScrollStateChanged(int arg0) {
+								// TODO Auto-generated method stub
+							}
+						});
+
+				break;
+			case 12:
+
+				break;
+			case 13:
+				initStartAnimation(msg.arg1);
+				break;
+			case 20:
+				yurenjiezhongjiang(msg.obj.toString(), 0);
+				break;
+			case 21:
+				yurenjiezhongjiang(msg.obj.toString(), 1);
+				break;
+			case 22:
+				yurenjiezhongjiang(msg.obj.toString(), 2);
+				break;
+			case 23:
+				yurenjiezhongjiang(msg.obj.toString(), 3);
+				break;
+			case 24:
+				yurenjiezhongjiang(msg.obj.toString(), 4);
+				break;
+			default:
+				break;
+			}
+		}
+
+	};
+
+	/**
+	 * 创建礼物数量列表
+	 */
+	private void creatPopWindow() {
+		View v = LayoutInflater.from(context).inflate(
+				R.layout.gift_num_popwindow, null);
+		ListView lv = (ListView) v.findViewById(R.id.gift_num_listView);
+		List<String> gift_pop_list = new ArrayList<String>();
+		gift_pop_list.add("其它数量");
+		gift_pop_list.add("1");
+		gift_pop_list.add("5");
+		gift_pop_list.add("10");
+		gift_pop_list.add("V型");
+		gift_pop_list.add("笑脸");
+		gift_pop_list.add("LOVE");
+		gift_pop_list.add("丘比特");
+		gift_pop_list.add("一生一世");
+		gift_pop_list.add("生生世世");
+		gift_pop_list.add("6666");
+		gift_pop_list.add("9999");
+		gift_pop_adapter = new GiftPopWindowAdapter(context, gift_pop_list);
+		lv.setAdapter(gift_pop_adapter);
+		lv.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				switch (arg2) {
+				case 0:
+					// 输入法管理器
+					if (!Utils.getinputisshow(context, edit_shuru_num)) {
+						imm = (InputMethodManager) localActivity
+								.getSystemService(Context.INPUT_METHOD_SERVICE);
+					}
+					edit_shuru_num.setInputType(InputType.TYPE_CLASS_NUMBER);
+					edit_shuru_num.setCursorVisible(true);
+					edit_shuru_num.requestFocus();
+					imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+					layout_gift_rl.setVisibility(8);
+					gift_num_input_rl.setVisibility(0);
+					break;
+				case 1:
+					gift_num_edit.setText("1");
+					break;
+				case 2:
+					gift_num_edit.setText("5");
+					break;
+				case 3:
+					gift_num_edit.setText("10");
+					break;
+				case 4:
+					gift_num_edit.setText("50");
+					break;
+				case 5:
+					gift_num_edit.setText("99");
+					break;
+				case 6:
+					gift_num_edit.setText("300");
+					break;
+				case 7:
+					gift_num_edit.setText("999");
+					break;
+				case 8:
+					gift_num_edit.setText("1314");
+					break;
+				case 9:
+					gift_num_edit.setText("3344");
+					break;
+				case 10:
+					gift_num_edit.setText("6666");
+					break;
+				case 11:
+					gift_num_edit.setText("9999");
+					break;
+				default:
+					break;
+				}
+				gift_pop.dismiss();
+			}
+		});
+		gift_pop = new PopupWindow(v, LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT);
+		gift_pop.setOutsideTouchable(true);
+		gift_pop.setTouchable(true);
+		gift_pop.setFocusable(true);
+		gift_pop.setBackgroundDrawable(new ColorDrawable(0));
+		// gift_pop.showAtLocation(v, Gravity.RIGHT | Gravity.BOTTOM, 10,10);
+	}
+
+	/**
+	 * 发送礼物
+	 * 
+	 * @author lvjian
+	 * 
+	 */
+	private void SendGift(final String from_backpack) {
+
+		Runnable sendgiftrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String user_id = sharedPreferences.getString(APP.USER_ID,
+							"");
+					String secret = sharedPreferences.getString(APP.SECRET, "");
+					String gift_id = sharedPreferences.getString(
+							APP.GIFT_ID_CURRENT, "");
+					String giftnum = gift_num_edit.getText().toString();
+					String gift_price = sharedPreferences.getString(
+							APP.GIFT_PRICE_CURREN, "");
+					String icon = sharedPreferences.getString(
+							APP.GIFT_ICON_CUTTENT, "");
+					String result = Utils.send_present(user_id, secret,
+							send_to_id, gift_id, giftnum, room_id,
+							from_backpack, is_guard);
+					Log.i("lvjian", "gift=======发送礼物结果====>" + result);
+					JSONObject obj = new JSONObject(result);
+					int s = obj.getInt("s");
+					if (s == 1) {
+						if ("1".equals(from_backpack)) {
+							// 从仓库发送礼物
+							handler.sendEmptyMessage(9);
+						} else {
+							handler.sendEmptyMessage(3);
+						}
+						JSONObject data = obj.getJSONObject("data");
+						String beans = data.getString("beans");
+						Editor editor = sharedPreferences.edit();
+						editor.putString(APP.BEANS, beans);
+						// 愚人节整蛊活动中奖消息解析
+						JSONObject aprilfool_info = data
+								.getJSONObject("aprilfool_info");
+						JSONArray sgift = aprilfool_info.getJSONArray("sgift");
+						if (sgift.length() > 0) {
+							if (sgift.length() == 1) {
+								JSONObject one = sgift.getJSONObject(0);
+								String name = one.getString("name");
+								if ("大智若愚(徽章)".equals(name)) {
+									Message m1 = new Message();
+									m1.what = 21;
+									m1.obj = "获得" + name;
+									handler.sendMessage(m1);
+								} else if ("老爷车座驾（3天）".equals(name)) {
+									Message m2 = new Message();
+									m2.what = 22;
+									m2.obj = "获得" + name;
+									handler.sendMessage(m2);
+								} else {
+									Message m3 = new Message();
+									m3.what = 23;
+									m3.obj = "获得" + name;
+									handler.sendMessage(m3);
+								}
+
+							} else {
+								String name_total = "";
+								for (int i = 0; i < sgift.length(); i++) {
+									JSONObject one1 = sgift.getJSONObject(i);
+									name_total = name_total + ","
+											+ one1.getString("name");
+								}
+								Message m4 = new Message();
+								m4.what = 24;
+								m4.obj = "获得" + name_total;
+								handler.sendMessage(m4);
+							}
+						}
+						JSONArray draw = aprilfool_info.getJSONArray("draw");
+						if (draw.length() > 0) {
+							JSONObject yaoshi = draw.getJSONObject(0);
+							int num = yaoshi.getInt("num");
+							Message m5 = new Message();
+							m5.what = 20;
+							m5.obj = "获得宝箱钥匙 X " + num;
+							handler.sendMessage(m5);
+						}
+						// 保存快速刷礼物
+						if (!"1".equals(from_backpack)
+								&& !Utils.isEmpty(giftnum)
+								&& !Utils.isEmpty(gift_price)
+								&& !Utils.isEmpty(gift_id)) {
+							editor.putString(APP.FAST_GIFTID, gift_id);
+							editor.putString(APP.FAST_GIFTNUM, giftnum);
+							editor.putString(APP.FAST_GIFTPRICE, gift_price);
+							editor.putString(APP.FAST_GIFTICON, icon);
+							handler.sendEmptyMessage(10);
+						}
+						editor.commit();
+					} else {
+						Message msg = new Message();
+						msg.what = 4;
+						msg.obj = obj.getString("data");
+						handler.sendMessage(msg);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Log.i("lvjian",
+							"---------------------------发送礼物异常--------------------------");
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(sendgiftrun);
+	}
+
+	/**
+	 * 初始化
+	 */
+	private void initgiftviewpager() {
+		// initGiftTitleBar();
+		setChangelView();
+		initIndicator();
+		showBeans();
+		giftview.findViewById(R.id.recharge_btn).setOnClickListener(
+				new OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						Intent in = new Intent(localActivity,
+								RechargeActivity.class);
+						in.putExtra("room_id", room_id);
+						in.putExtra("anchor_id", anchor_id);
+						localActivity.startActivity(in);
+					}
+				});
+		cangku_title.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				createCankuGift();
+			}
+
+		});
+		handler.sendEmptyMessage(11);
+	}
+
+	private void initIndicator() {
+		selectMode(0);
+		// 初始化指示器并设置指示器位置
+		indicateParams.width = mItemWidth;// 设置指示器宽度
+		indicateParams.setMargins(0, 0, 0, 0);
+		indicateTV.setLayoutParams(indicateParams);// 设置指示器宽度
+	}
+
+	private void setChangelView() {
+		// 一个Item宽度为屏幕的1/5
+		gitftitletext.removeAllViews();
+		int count = cate_list.size();
+		for (int i = 0; i < count; i++) {
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+					mItemWidth, LayoutParams.WRAP_CONTENT);
+			TextView localTextView = new TextView(this.localActivity);
+			localTextView.setTextAppearance(this.localActivity,
+					R.style.top_category_scroll_view_item_text);
+			localTextView.setGravity(Gravity.CENTER);
+			localTextView.setText(cate_list.get(i).getName());
+			localTextView.setTextColor(localActivity.getResources()
+					.getColorStateList(R.color.gifttab_bg));
+			if (columnSelectIndex == i) {// 设置第一个被选中,颜色变化
+				localTextView.setTextColor(localActivity.getResources()
+						.getColorStateList(R.color.gifttitle));
+			}
+			gitftitletext.addView(localTextView, i, params);
+
+		}
+		// 重新设置宽度
+		LinearLayout.LayoutParams columuParams = (android.widget.LinearLayout.LayoutParams) gitftitletext
+				.getLayoutParams();
+		columuParams.width = mItemWidth * count;
+		gitftitletext.setLayoutParams(columuParams);
+		// 设置标题类型选择点击事件
+		setModelClick();
+		getCategoryGiftList(0);
+	}
+
+	private void setModelClick() {
+		for (int i = 0; i < gitftitletext.getChildCount(); i++) {
+			TextView textView = (TextView) gitftitletext.getChildAt(i);
+			textView.setTag(i);
+			textView.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					int index = (Integer) v.getTag();
+					Message msg = Message.obtain();
+					msg.what = 13;
+					msg.arg1 = index;
+					handler.sendMessage(msg);
+					isCangku = false;
+					selectMode(index);
+					indicateTV.setBackgroundColor(localActivity.getResources()
+							.getColor(R.color.gitf_btn));
+					cangku_title.setTextColor(localActivity.getResources()
+							.getColor(R.color.gifttitle));
+					getCategoryGiftList(index);
+					handler.sendEmptyMessage(11);
+				}
+			});
+		}
+	}
+
+	// 滑动指示器到指定的位置
+	private void initStartAnimation(int position) {
+		indicateParams.setMargins((int) (indicateParams.width * (position)), 0,
+				0, 0);
+		indicateTV.setLayoutParams(indicateParams);
+	}
+
+	protected void selectMode(int index) {
+		TextView selTextView = null;
+		// 获取所有model,清除之前选择的状态
+		for (int i = 0; i < gitftitletext.getChildCount(); i++) {
+			TextView textView = (TextView) gitftitletext.getChildAt(i);
+			textView.setTextColor(localActivity.getResources().getColor(
+					R.color.gifttitle));
+			if (i == index) {
+				selTextView = textView;
+				// 设置被选中项字体颜色变化为被选中颜色
+				selTextView.setTextColor(localActivity.getResources().getColor(
+						R.color.gitf_btn));
+				int left = selTextView.getLeft();
+				int right = selTextView.getRight();
+				int sw = localActivity.getResources().getDisplayMetrics().widthPixels;
+				// 将控件滚动到屏幕的中间位置
+				scrollview.scrollTo(left - sw / 2 + (right - left) / 2, 0);
+			}
+		}
+
+	}
+
+	/**
+	 * 获取屏幕宽度
+	 * 
+	 * @param activity
+	 * @return
+	 */
+	public final static int getWindowsWidth(Activity activity) {
+		DisplayMetrics dm = new DisplayMetrics();
+		activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+		return dm.widthPixels;
+	}
+
+	public void createCankuGift() {
+		cangku_title.setTextColor(localActivity.getResources().getColor(
+				R.color.gitf_btn));
+		// changeAlltitleStyle();
+		isCangku = true;
+		selectMode(-1);
+		indicateTV.setBackgroundColor(localActivity.getResources().getColor(
+				R.color.white));
+		Gs = null;
+		Gs = new ArrayList<Gift>();
+		getcankugift();
+		handler.sendEmptyMessage(11);
+	}
+
+	private void showBeans() {
+		String beans = sharedPreferences.getString(APP.BEANS, "");
+		balance_text.setText(beans);
+		send_gift_to.setText(send_to_name1);
+	}
+
+	private void getCategoryGiftList(int index) {
+		Gs = new ArrayList<Gift>();
+		try {
+			JSONObject categoryObj = giftslist.getJSONObject(index);
+
+			JSONArray giftList = categoryObj.getJSONArray("gifts");
+			for (int i = 0; i < giftList.length(); i++) {
+
+				Gift giftitem = new Gift();
+				Gson gson = new Gson();
+				giftitem = gson
+						.fromJson(giftList.get(i).toString(), Gift.class);
+				JSONObject a = new JSONObject(giftList.get(i).toString());
+				Gs.add(giftitem);
+			}
+		} catch (JsonSyntaxException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void initCirclePoint() {
+		ViewGroup group = (ViewGroup) giftview.findViewById(R.id.viewGroup);
+		group.removeAllViews();
+		imageViews = new ImageView[viewpagersize];
+		// 广告栏的小圆点图标
+		for (int i = 0; i < (viewpagersize); i++) {
+			// 创建一个ImageView, 并设置宽高. 将该对象放入到数组中
+			imageView = new ImageView(context);
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			params.setMargins(5, 0, 5, 0);
+			imageView.setLayoutParams(params);
+			imageViews[i] = imageView;
+			// 初始值, 默认第0个选中
+			if (i == 0) {
+				imageViews[i].setBackgroundResource(R.drawable.dot_red);
+			} else {
+				imageViews[i].setBackgroundResource(R.drawable.dot_white);
+			}
+			// 将小圆点放入到布局中
+			group.addView(imageViews[i]);
+		}
+	}
+
+	/**
+	 * 
+	 * @author Jon_V 赠送红豆
+	 */
+	private void SendHearts(final String num, final String from_backpack) {
+		Runnable sendheartrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.send_hearts(
+							sharedPreferences.getString(APP.USER_ID, ""),
+							sharedPreferences.getString(APP.SECRET, ""),
+							anchor_id, room_id, from_backpack, num);
+					JSONObject obj = new JSONObject(result);
+					int state = obj.getInt("s");
+					if (state == 1) {
+						if ("1".equals(from_backpack)) {
+							// 从仓库发送红豆
+							handler.sendEmptyMessage(9);
+						} else {
+							JSONObject data = obj.getJSONObject("data");
+							String hearts = data.getString("hearts");
+							Message msg = new Message();
+							msg.obj = hearts;
+							msg.what = 7;
+							handler.sendMessage(msg);
+						}
+
+					} else {
+						String message = "";
+						if (obj.has("msg")) {
+							message = obj.getString("msg");
+						} else {
+							message = obj.getString("data");
+						}
+						Message msg = new Message();
+						msg.what = 8;
+						msg.obj = message;
+						handler.sendMessage(msg);
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(sendheartrun);
+	}
+
+	/**
+	 * 获取仓库礼物
+	 * 
+	 * @author lvjian
+	 * 
+	 */
+	private void getcankugift() {
+		Runnable getcankurun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String user_id = sharedPreferences.getString(APP.USER_ID,
+							"");
+					String secret = sharedPreferences.getString(APP.SECRET, "");
+					String result = Utils.get_canku_list(user_id, secret);
+					JSONObject obj = new JSONObject(result);
+					int s = obj.getInt("s");
+					if (s == 1) {
+						JSONArray ja = obj.getJSONArray("data");
+						for (int i = 0; i < ja.length(); i++) {
+							JSONObject j = ja.getJSONObject(i);
+							Gift gift = new Gift();
+							gift.setIcon(j.getString("icon"));
+							gift.setPrice(j.getString("num"));
+							gift.setName(j.getString("name"));
+							gift.setId(j.getString("gift_id"));
+							Gs.add(gift);
+						}
+						handler.sendEmptyMessage(11);
+					} else {
+						handler.sendEmptyMessage(12);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+					handler.sendEmptyMessage(3);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(getcankurun);
+	}
+
+	public boolean getshowing() {
+		return isshowing;
+	}
+
+	public static void changeCanku(List<Gift> list) {
+		instance.Gs = list;
+		instance.handler.sendEmptyMessage(11);
+	}
+
+	private void tequanliwu(String text) {
+		final Dialog dialog_re = new AlertDialog.Builder(context).create();
+		dialog_re.show();
+		Window localWindow = dialog_re.getWindow();
+		localWindow.setContentView(LayoutInflater.from(context).inflate(
+				R.layout.repeatlogin_dialog, null));
+		Button releat_login_queding = (Button) localWindow
+				.findViewById(R.id.releat_login_queding);
+		TextView moneynotenoth_title = (TextView) localWindow
+				.findViewById(R.id.moneynotenoth_title);
+		moneynotenoth_title.setText(text);
+		releat_login_queding.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View paramAnonymousView) {
+				dialog_re.cancel();
+			}
+		});
+	}
+
+	private void yurenjiezhongjiang(String text, int nn) {
+		final Dialog dialog_re1 = new AlertDialog.Builder(context).create();
+		dialog_re1.show();
+		Window localWindow = dialog_re1.getWindow();
+		localWindow.setContentView(LayoutInflater.from(context).inflate(
+				R.layout.yurenjie_dialog, null));
+		ImageView yrj_close = (ImageView) localWindow
+				.findViewById(R.id.yrj_close);
+		TextView yrj_content = (TextView) localWindow
+				.findViewById(R.id.yrj_content);
+		ImageView yrj_img = (ImageView) localWindow.findViewById(R.id.yrj_img);
+
+		yrj_content.setText(text);
+		yrj_close.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				dialog_re1.cancel();
+			}
+		});
+		switch (nn) {
+		case 0:
+			yrj_img.setImageResource(R.drawable.yr_yaoshi);
+			break;
+		case 1:
+			yrj_img.setImageResource(R.drawable.yr_huizhang);
+			break;
+		case 2:
+			yrj_img.setImageResource(R.drawable.yr_lyc);
+			break;
+		case 3:
+			yrj_img.setImageResource(R.drawable.yr_ql);
+			break;
+		case 4:
+			yrj_img.setImageResource(R.drawable.yr_libao);
+			break;
+
+		default:
+			break;
+		}
+
+	}
+
+	
+	private void showOpenGiftTips(){
+		
+		final AlertDialog localAlertDialog = new AlertDialog.Builder(context).create();
+		localAlertDialog.show();
+		Window localWindow = localAlertDialog.getWindow();
+		View localView = LayoutInflater.from(context).inflate(R.layout.dialog_deletphoto,null);
+		
+		
+		TextView tv_showText = (TextView) localView.findViewById(R.id.TextView_showText);
+		
+		tv_showText.setText("是否打开礼包?");
+		
+		LinearLayout queding = (LinearLayout) localView.findViewById(R.id.layout_sure);
+		queding.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				
+				localAlertDialog.dismiss();
+				callOpenGift();
+			
+			}
+		});
+		
+		LinearLayout close = (LinearLayout) localView.findViewById(R.id.layout_cancel);
+		close.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				localAlertDialog.dismiss();
+			}
+		});
+		
+		localAlertDialog.setCancelable(false);
+		localWindow.setContentView(localView);
+		
+	}
+
+	public void changeGiftTypeShow(boolean isSend){
+		isOpenGift = !isSend ;
+		if(isSend){
+			send_gift.setText("赠送");
+			gift_num_edit.setEnabled(true);
+		}else{
+			send_gift.setText("打开");
+			gift_num_edit.setEnabled(false);
+		}
+	}
+	
+	/**
+	 * sjf  2016-4-25  51活动打开礼包
+	 */
+	private void callOpenGift() {
+		Runnable getcankurun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String user_id = sharedPreferences.getString(APP.USER_ID,
+							"");
+					String secret = sharedPreferences.getString(APP.SECRET, "");
+					
+					String giftid = sharedPreferences.getString(APP.GIFT_ID_CURRENT, "");
+					String result = Utils.addRpcEvent(RpcEvent.CallOpenGift, user_id,secret,giftid) ;
+					JSONObject obj = new JSONObject(result);
+					int s = obj.getInt("s");
+					if (s == 1) {
+						String info = obj.getString("data") ;
+						
+						Message msg = new Message() ;
+						msg.what = M_HandlerCmd_OpenGiftSuccess;
+						msg.obj = info ;
+						handler.sendMessage(msg);
+						handler.sendEmptyMessage(9);
+					} else {
+						handler.sendEmptyMessage(M_HandlerCmd_OpenGiftFailed);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+//					handler.sendEmptyMessage(3);
+					handler.sendEmptyMessage(M_HandlerCmd_OpenGiftFailed);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(getcankurun);
+	}
+
+	
+	
+	
+	
+	
+	
+	private void showTips(String tips) {
+		final AlertDialog localAlertDialog = new AlertDialog.Builder(context)
+				.create();
+		localAlertDialog.show();
+		Window localWindow = localAlertDialog.getWindow();
+		View localView = LayoutInflater.from(context).inflate(R.layout.dialog_reward,
+				null);
+		
+		TextView textshow = (TextView) localView.findViewById(R.id.text_shouchongtips);
+		TextView shouchongTitle = (TextView) localView.findViewById(R.id.shouchongTitle);
+		
+		
+		textshow.setText(tips);
+		shouchongTitle.setText("恭喜您");
+		
+		Button queding = (Button) localView.findViewById(R.id.bt_shouchongsussessSure);
+		queding.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				localAlertDialog.dismiss();
+			}
+		});
+		
+//		Button close = (Button) localView.findViewById(R.id.buttonclose);
+//		close.setOnClickListener(new OnClickListener() {
+//
+//			@Override
+//			public void onClick(View arg0) {
+//				// TODO Auto-generated method stub
+//				localAlertDialog.dismiss();
+//			}
+//		});
+//		
+		localAlertDialog.setCancelable(false);
+		localWindow.setContentView(localView);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}

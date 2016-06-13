@@ -1,0 +1,467 @@
+package com.zhipu.chinavideo;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.tencent.mm.sdk.modelmsg.SendAuth;
+import com.tencent.mm.sdk.openapi.IWXAPI;
+import com.tencent.mm.sdk.openapi.WXAPIFactory;
+import com.tencent.tauth.IUiListener;
+import com.tencent.tauth.Tencent;
+import com.tencent.tauth.UiError;
+import com.umeng.analytics.MobclickAgent;
+import com.zhipu.chinavideo.broadcast.SteathBroadCastReceive;
+import com.zhipu.chinavideo.db.GlobalData;
+import com.zhipu.chinavideo.db.HandlerCmd;
+import com.zhipu.chinavideo.rpc.RpcEvent;
+import com.zhipu.chinavideo.rpc.RpcRoutine;
+import com.zhipu.chinavideo.util.APP;
+import com.zhipu.chinavideo.util.ThreadPoolWrap;
+import com.zhipu.chinavideo.util.UMengShare;
+import com.zhipu.chinavideo.util.Utils;
+import com.zhipu.chinavideo.wxapi.WXEntryActivity;
+
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+public class LoginActivity extends Activity implements OnClickListener {
+	private LinearLayout login_btn;
+	private String un = "";
+	private String pwd = "";
+	private EditText username;
+	private EditText password;
+	private String deviceToken = "";
+	private SharedPreferences preferences;
+	private String data = "";
+	private ImageView regist_btn;
+	private TextView fogretpassword;
+	private View title;
+	private ImageView back;
+	private ImageView icon_weixin_login;
+	private ImageView icon_qq_login;
+	private IWXAPI mWeixinAPI;
+	// 注册到微信
+	private String APP_ID = "wxe3b6571489e8a96d";
+	private Dialog dialog;
+	private String type = "3";
+	private String wx_qq_channel = "安智CPI";
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_login);
+		IntentFilter filter = new IntentFilter(WXEntryActivity.action);
+		registerReceiver(broadcastReceiver, filter);
+		preferences = getSharedPreferences(APP.MY_SP, Context.MODE_PRIVATE);
+		deviceToken = preferences.getString(APP.DEVICETOKEN, "");
+		this.dialog = Utils.showProgressDialog(this, "正在登录", true);
+		title = findViewById(R.id.login_title);
+		back = (ImageView) findViewById(R.id.title_back);
+		title.setBackgroundResource(R.color.transparent);
+		login_btn = (LinearLayout) findViewById(R.id.login_button);
+		username = (EditText) findViewById(R.id.login_username);
+		password = (EditText) findViewById(R.id.login_pwd);
+		regist_btn = (ImageView) findViewById(R.id.regist_btn);
+		fogretpassword = (TextView) findViewById(R.id.fogretpassword);
+		fogretpassword.setOnClickListener(this);
+		icon_weixin_login = (ImageView) findViewById(R.id.icon_weixin_login);
+		icon_qq_login = (ImageView) findViewById(R.id.icon_qq_login);
+		icon_weixin_login.setOnClickListener(this);
+		icon_qq_login.setOnClickListener(this);
+		regist_btn.setOnClickListener(this);
+		login_btn.setOnClickListener(this);
+		back.setOnClickListener(this);
+		// 设置初始值
+		String lasttime_username = preferences.getString(APP.LASTTIME_USERNAME,
+				"");
+		String lasttime_password = preferences.getString(APP.LASTTIME_PASSWORD,
+				"");
+		if (!Utils.isEmpty(lasttime_username)) {
+			username.setText(lasttime_username);
+		}
+		if (!Utils.isEmpty(lasttime_password)) {
+			password.setText(lasttime_password);
+		}
+		Intent intent = this.getIntent();
+		type = intent.getStringExtra("type");
+		if ("1".equals(type)) {
+			weixinlogin();
+		} else if ("2".equals(type)) {
+			qqlogin();
+		} else {
+		}
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.login_button:
+			un = username.getText().toString().trim();
+			pwd = password.getText().toString().trim();
+			if ("".equals(un) || "".equals(pwd)) {
+				Toast.makeText(this, "用户名或密码不能为空！", 1000).show();
+			} else {
+				login("m_user_login", un, pwd, deviceToken);
+			}
+		
+			break;
+		case R.id.regist_btn:
+			Intent in = new Intent(LoginActivity.this, RegisterActivity.class);
+			startActivityForResult(in, 100);
+			break;
+		case R.id.fogretpassword:
+			startActivityForResult(new Intent(LoginActivity.this,
+					FogretPwdActivity.class), 100);
+			break;
+		case R.id.title_back:
+			finish();
+			break;
+		// 微信登录
+		case R.id.icon_weixin_login:
+			Log.i("lvjian", "----------------微信登录-----------------");
+			weixinlogin();
+			break;
+		// qq登录
+		case R.id.icon_qq_login:
+			Log.i("lvjian", "----------------qq登录-----------------");
+			qqlogin();
+			break;
+		default:
+			break;
+		}
+	}
+
+	/**
+	 * 用户登录接口
+	 */
+	private void login(final String name, final String openid,
+			final String token, final String deviceToken) {
+		Log.i("lvjian", "deviceToken登录时的token=====》" + deviceToken);
+		this.dialog.show();
+		
+		if ("wechat_login".equals(name)) {
+			RpcRoutine.getInstance().addRpc(RpcEvent.CallWXLogin, handler, LoginActivity.this, openid, token,50,deviceToken, wx_qq_channel);
+		} else if ("m_qq_login".equals(name)) {
+			RpcRoutine.getInstance().addRpc(RpcEvent.CallQQLogin, handler, LoginActivity.this, openid, token,50,deviceToken, wx_qq_channel);
+		} else if ("m_user_login".equals(name)){
+			RpcRoutine.getInstance().addRpc(RpcEvent.CallUserLogin, handler, LoginActivity.this, openid, token, 50,deviceToken);
+		}
+		
+		
+//		Runnable loginrun = new Runnable() {
+//			public void run() {
+//				String s = "";
+//				if ("wechat_login".equals(name)) {
+//					s = Utils.wx_qq_user_login(name, openid, token,
+//							deviceToken, wx_qq_channel);
+//				} else if ("m_qq_login".equals(name)) {
+//					s = Utils.wx_qq_user_login(name, openid, token,
+//							deviceToken, wx_qq_channel);
+//				} else {
+//					s = Utils.user_login(name, openid, token, deviceToken);
+//				}
+//				try {
+//					JSONObject jsonObject = new JSONObject(s);
+//					int a = jsonObject.getInt("s");
+//					if (a == 1) {
+//						JSONObject data = jsonObject.getJSONObject("data");
+//						String id = data.getString("id");
+//						String secret = jsonObject.getString("secret");
+//						String user_name = data.getString("username");
+//						String password = data.getString("password");
+//						String gender = data.getString("gender");
+//						String pos = data.getString("pos");
+//						String phone = data.getString("phone");
+//						Editor editor = preferences.edit();
+//						editor.putString(APP.IS_LOGIN, "true");
+//						editor.putString(APP.USER_ID, id);
+//						editor.putString(APP.SECRET, secret);
+//						editor.putString(APP.USER, user_name);
+//						editor.putString(APP.PASS, password);
+//						editor.putString(APP.GENDER, gender);
+//						editor.putString(APP.POS, pos);
+//						editor.putString(APP.PHONE, phone);	
+//						if (!name.equals("m_qq_login")
+//								&& !name.equals("wechat_login")) {
+//							editor.putString(APP.LASTTIME_USERNAME, openid);
+//							editor.putString(APP.LASTTIME_PASSWORD, token);
+//						}
+//						editor.commit();
+//						// 获取用户信息
+//						getUserinfo(id, secret);
+//						SignToday(id, secret);
+//						handler.sendEmptyMessage(HandlerCmd.HandlerCmd_CallLoginSuccess);
+//					} else {
+//						data = jsonObject.getString("data");
+//						handler.sendEmptyMessage(HandlerCmd.HandlerCmd_CallLoginFailed);
+//					}
+//				} catch (JSONException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//					handler.sendEmptyMessage(HandlerCmd.HandlerCmd_CallLoginFailed);
+//				}
+//			}
+//		};
+//		ThreadPoolWrap.getThreadPool().executeTask(loginrun);
+	}
+
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case HandlerCmd.HandlerCmd_CallLoginSuccess:
+				Log.i("lvjian", "用户登录成功");
+				
+				break;
+			case HandlerCmd.HandlerCmd_CallLoginFailed:
+			case HandlerCmd.HandlerCmd_CallLoginException:
+				dialog.dismiss();
+				
+				data =GlobalData.getInstance(LoginActivity.this).mLoginErrorInfo;
+				
+				Log.i("lvjian", "用户登录失败或者异常");
+				if (Utils.isEmpty(data)) {
+					Utils.showToast(LoginActivity.this, "网络条件差,请检查网络！");
+				} else {
+					Utils.showToast(LoginActivity.this, data);
+				}
+				break;
+			case HandlerCmd.HandlerCmd_GetUserInfoSuccess:
+				dialog.dismiss();
+				Log.i("lvjian", "获取用户信息成功");
+				Toast.makeText(LoginActivity.this, "登录成功", 100).show();
+				setResult(20, null);
+				
+				Intent broadCaseIntent = new Intent(SteathBroadCastReceive.action);
+				sendBroadcast(broadCaseIntent);
+				finish();
+				break;
+			case HandlerCmd.HandlerCmd_GetUserInfoFailed:
+				dialog.dismiss();
+				Log.i("lvjian", "获取用户信息失败或异常");
+				break;
+			default:
+				break;
+			}
+		};
+	};
+
+	/**
+	 * 获取用户详细信息
+	 * 
+	 * @param id
+	 * @param key
+	 */
+	private void getUserinfo(final String id, final String key) {
+		// TODO Auto-generated method stub
+		Runnable getuserinforun = new Runnable() {
+			public void run() {
+				String s = Utils.getuserinfo(id, key);
+				Log.i("lvjian", "获取用户详细信息-----》" + s);
+				try {
+					JSONObject jsonObject = new JSONObject(s);
+					int i = jsonObject.getInt("s");
+					if (i == 1) {
+						JSONObject data = jsonObject.getJSONObject("data");
+						String beans = data.getString("beans");
+						String rlevel = data.getString("rlevel");
+						String clevel = data.getString("clevel");
+						String icon = data.getString("icon");
+						String nickname = data.getString("nickname");
+						String openkey = data.getString("openkey");
+						String shouchong = data.getString("shouchong");
+						String time = data.getString("timestamp");
+						String cost_beans = data.getString("cost_beans");
+						String received_beans = data
+								.getString("received_beans");
+						String openid = data.getString("openid");
+						int viplv = data.getInt("vip_lv");
+						int is_stealth = data.getInt("is_stealth");
+						Editor editor = preferences.edit();
+						editor.putString(APP.BEANS, beans);
+						editor.putString(APP.USER_ICON, APP.USER_LOGO_ROOT
+								+ icon);
+						editor.putString(APP.USER_RLEVEL, rlevel);
+						editor.putString(APP.USER_CLEVEL, clevel);
+						editor.putString(APP.NICKNAME, nickname);
+						editor.putString(APP.OPENKEY, openkey);
+						editor.putString(APP.TIMESTAMP, time);
+						editor.putString(APP.COST_BEANS, cost_beans);
+						editor.putString(APP.RECEIVED_BEANS, received_beans);
+						editor.putString(APP.OPEN_ID, openid);
+						editor.putString(APP.SHOUCHONG, shouchong);
+						editor.putInt(APP.VIPLV, viplv);
+						editor.putInt(APP.ISSTEALTH, is_stealth);
+						editor.commit();
+						handler.sendEmptyMessage(HandlerCmd.HandlerCmd_GetUserInfoSuccess);
+					} else {
+						handler.sendEmptyMessage(HandlerCmd.HandlerCmd_GetUserInfoFailed);
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					handler.sendEmptyMessage(HandlerCmd.HandlerCmd_GetUserInfoFailed);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(getuserinforun);
+		
+		
+//		RpcRoutine.getInstance().addRpc(RpcEvent.GetUserInfo, handler);
+		
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		super.onActivityResult(requestCode, resultCode, data);
+		if (20 == resultCode) {
+			String user_name = data.getExtras().getString("username");
+			String pass_word = data.getExtras().getString("password");
+			username.setText(user_name);
+			password.setText(pass_word);
+		}
+	}
+
+	/**
+	 * 点击按钮进行签到
+	 */
+	private void SignToday(final String user, final String secr) {
+		// TODO Auto-generated method stub
+		Runnable signtodayrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.qiandaotoday(user, secr);
+					JSONObject obj = new JSONObject(result);
+					int s = obj.getInt("s");
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(signtodayrun);
+	}
+
+	/**
+	 * 
+	 * qq登录接收
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	private class BaseUiListener implements IUiListener {
+
+		@Override
+		public void onComplete(Object response) {
+			// Utils.showToast(getApplicationContext(), response.toString()
+			// + "登录成功");
+			doComplete((JSONObject) response);
+		}
+
+		protected void doComplete(JSONObject values) {
+
+		}
+
+		@Override
+		public void onError(UiError e) {
+			// Utils.showToast(getApplicationContext(), "onError: "
+			// + e.errorDetail);
+			Log.i("lvjian", "-------qqlogin-----------onError--------");
+		}
+
+		@Override
+		public void onCancel() {
+			Log.i("lvjian", "-------qqlogin-----------onCancel--------");
+			// Utils.showToast(getApplicationContext(), "onCancel: ");
+		}
+	}
+
+	/**
+	 * qq登录
+	 */
+	public void qqlogin() {
+		Tencent mTencent = Tencent.createInstance("100448250", this);
+		IUiListener listener = new BaseUiListener() {
+			protected void doComplete(JSONObject paramAnonymousJSONObject) {
+				String access_token = paramAnonymousJSONObject
+						.optString("access_token");
+				String openid = paramAnonymousJSONObject.optString("openid");
+				// Log.i("lvjian", "qqdenglu--------->" + openid);
+				// Log.i("lvjian", "qqdenglu--------->" + access_token);
+				login("m_qq_login", openid, access_token, deviceToken);
+			}
+		};
+		mTencent.login(LoginActivity.this, "all", listener);
+	}
+
+	/**
+	 * 微信登录
+	 */
+	private void weixinlogin() {
+		if (mWeixinAPI == null) {
+			mWeixinAPI = WXAPIFactory.createWXAPI(this, APP_ID, false);
+		}
+		if (!mWeixinAPI.isWXAppInstalled()) {
+			// 提醒用户没有按照微信
+			Utils.showToast(LoginActivity.this, "没有安装微信客户端！");
+			return;
+		}
+		mWeixinAPI.registerApp(APP_ID);
+		SendAuth.Req req = new SendAuth.Req();
+		req.scope = "snsapi_userinfo";
+		req.transaction = "wxe3b6571489e8a96d";
+		req.state = "none";
+		mWeixinAPI.sendReq(req);
+	}
+
+	BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+		public void onReceive(Context arg0, Intent intent) {
+			String openid = intent.getExtras().getString("openid");
+			String access_token = intent.getExtras().getString("access_token");
+			login("wechat_login", openid, access_token, deviceToken);
+		};
+	};
+
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		unregisterReceiver(broadcastReceiver);
+	}
+
+	/**
+	 * 友盟统计
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onResume(this);
+	}
+                                                              
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPause(this);
+	}
+}

@@ -1,0 +1,2532 @@
+package com.zhipu.chinavideo;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.google.gson.JsonObject;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.umeng.analytics.MobclickAgent;
+import com.zhipu.chinavideo.adapter.ChatAdapter;
+import com.zhipu.chinavideo.adapter.ChatGiftAdapter;
+import com.zhipu.chinavideo.adapter.RoomTabAdapter;
+import com.zhipu.chinavideo.db.GlobalData;
+import com.zhipu.chinavideo.db.HandlerCmd;
+import com.zhipu.chinavideo.db.MyOpenHelper;
+import com.zhipu.chinavideo.entity.ActivityMsg;
+import com.zhipu.chinavideo.entity.AnchorInfo;
+import com.zhipu.chinavideo.entity.Guard;
+import com.zhipu.chinavideo.entity.Historys;
+import com.zhipu.chinavideo.entity.ChatMessage;
+import com.zhipu.chinavideo.entity.SiLiao;
+import com.zhipu.chinavideo.fragment.AnchorZhuboFragment;
+import com.zhipu.chinavideo.fragment.MommonCountFragment;
+import com.zhipu.chinavideo.fragment.MommonManageFragment;
+import com.zhipu.chinavideo.fragment.PubChatFragment;
+import com.zhipu.chinavideo.fragment.PriChatFragment;
+import com.zhipu.chinavideo.manager.AnchorManager;
+import com.zhipu.chinavideo.manager.ChooseSongManager;
+import com.zhipu.chinavideo.manager.DownRunwayManager;
+import com.zhipu.chinavideo.manager.EditManager;
+import com.zhipu.chinavideo.manager.GiftManager;
+import com.zhipu.chinavideo.manager.RankListManager;
+import com.zhipu.chinavideo.manager.RunwayManager;
+import com.zhipu.chinavideo.manager.ShouHuManager;
+import com.zhipu.chinavideo.manager.SoundManager;
+import com.zhipu.chinavideo.player.PlayerViewController;
+import com.zhipu.chinavideo.rpc.RpcEvent;
+import com.zhipu.chinavideo.rpc.RpcRoutine;
+import com.zhipu.chinavideo.socket.BaseClient;
+import com.zhipu.chinavideo.util.APP;
+import com.zhipu.chinavideo.util.BasicActivity;
+import com.zhipu.chinavideo.util.CircularImage;
+import com.zhipu.chinavideo.util.PagerSlidingTabStrip;
+import com.zhipu.chinavideo.util.ParseMessage;
+import com.zhipu.chinavideo.util.RunTextView;
+import com.zhipu.chinavideo.util.ThreadPoolWrap;
+import com.zhipu.chinavideo.util.Utils;
+
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.drawable.AnimationDrawable;
+import android.media.AudioManager;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.Display;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.view.ViewStub;
+import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
+import android.view.animation.Animation.AnimationListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+public class LiveRoomActivity extends BasicActivity implements OnClickListener {
+	// 连接socket的user_id要用房间信息里返回的openid
+
+	private String mMommonUrl;
+	private int mMommonPort;
+
+	private String openid;
+	private ImageView video_background;
+	private static RelativeLayout liveroomview;
+	private ViewStub input_viewstub;
+	private static RelativeLayout intpu_layout;
+	private TextView input_et;
+	private static EditManager editmanager;
+	// 检测用户由游客从房间登录后状态，数据更新状态
+	private boolean is_login = false;
+	// 房间主播的id
+	private static String anchor_id = "";
+	// 获取的主播关注数和红豆数
+	private String guanzhu_num = "";
+	private final int GETROOMINFO_OK = 2;
+	private final int GETGUANZHUN_NUM_OK = 3;
+	private final int GETGUANZHUN_NUM_ERROR = 4;
+	private final int GUANZHU_OK = 5;
+	private final int GUANZHU_ERROR = 6;
+	private final int GET_MSG = 7;
+	private final int GETROOMINFO_ERROR = 8;
+
+	// 财神相关
+	public static final int HANDLE_MOMMOM_CONNECT = 88;// 财神消息
+
+	public static final int C_MOMMON_CNNECT = 7;
+	public static final int S_GET_MOMMON_CNNECT = 74;
+
+	public static final int S_GET_MOMMON_START = 10;// 游戏开始
+
+	public static final int C_MOMMON_CLICK = 8;// 点击金币
+	public static final int S_GET_MOMMON_CLICK = 9;// 点击金币回馈
+
+	public static final int S_GET_MOMMON_OVER = 11;// 游戏结束
+
+	private static SharedPreferences sharedPreferences;
+	private String chat_url;
+	private int port;
+	private String live_url;
+	private String stream;
+	private String room_id = "";
+	private int mVideoWidth;
+	private int mVideoHeight;
+	private boolean mIsVideoSizeKnown = false;
+	private boolean mIsVideoReadyToBePlayed = false;
+	private PlayerViewController mMediaPlayer;
+	// private boolean is_play = true;
+	private TextView pb;
+	private DisplayMetrics dm;
+	private static int screenWidth;
+	private static int screenHeight;
+	private SurfaceView sf;
+	private SQLiteDatabase db;
+	// 房间信息
+	private String anchor_icon;
+	private String anchor_received_level;
+	private static String anchor_name;
+	private ImageView room_back;
+	private int is_follow = 0;// 是否关注
+	private TextView room_guanzhu_num;
+	private TextView guanzhu_text;
+	private ImageView guanzhu_icon;
+	private RelativeLayout room_guanzhu;
+	private static ViewPager viewPager;
+	private PagerSlidingTabStrip indicator;
+	private static RoomTabAdapter roomTabAdapter;
+	// public static ChatClient client;
+	// public static MommonClient mommonclient;
+	public static BaseClient client;
+	public static BaseClient mommonclient;
+	private String timestamp;
+	private String openkey;
+	private static Context context;
+	private ImageView gift_icon;
+	private CircularImage input_icon;
+	private static GiftManager giftmanager;
+	private AnchorManager anchormanager;
+	private static RankListManager rankListManager;
+	private static ChooseSongManager chooseSongManager;// 点歌界面管理
+	private static ShouHuManager shouHuManager;
+	private ViewStub gift_viewstub;
+	private ViewStub anchor_viewstub;
+	private ViewStub ranklist_viewstub;
+	private ViewStub shouhulist_viewstub;
+	private ViewStub chooseSongViewStub;// 点歌界面的ViewStub
+	private List<ChatMessage> messages;
+	private List<ChatMessage> primessages;
+	private static ChatAdapter chatadapter;
+	private static ChatAdapter pri_chatadapter;
+	private ListView pub_chat_listview;
+	//
+	private ListView pri_chat_listview;
+	private RunwayManager mRunwayManager;
+	private DownRunwayManager down_mRunwayManager;
+	private RunTextView runwayTextView;
+	private RunTextView down_runwayTextView;
+	// 聊天listview
+	private static ListView edit_listview;
+	// 私聊消息
+	private static ListView pri_edit_list;
+	private static ImageView red_addone;
+	// 当前播放的Anchor
+	private AnchorInfo anchor_current;
+	private RelativeLayout video_father;
+	private LinearLayout video_more_button;
+	private boolean button_is_show = true;
+	private ImageView video_setting;
+	private ImageView video_shengyin;
+	private ImageView video_big;
+	private ImageView video_stop;
+	private RelativeLayout rl_video;
+	private boolean is_fullscreen = false;
+	private boolean is_Audiomode = false;
+	private TextView yinpinmoshi_tv;
+	// 主播在线状态
+	private String status = "1";
+	// 红豆
+	// 用户的财富等级
+	private static String user_cost_level = "0";
+	public static ImageLoader mImageLoader = null;
+	public static DisplayImageOptions mOptions;
+	// 快速刷礼物按钮
+	private ImageView fastsend_gift_img;
+	private TextView fastsend_gift_num;
+	private RelativeLayout gift_button;
+	private ListView chat_gift_item;
+	public static ChatGiftAdapter chatGiftAdapter;
+	public static List<ChatMessage> giftmessages;
+	private Timer timer;
+	private Timer timer_run_bottom;
+	private Timer timer_run_top;
+	private static Timer timershuaping;
+	private int is_guard = 0;
+	private static boolean shuaping = true;
+	private Animation push_right_in;
+	// 禁言
+	public static boolean is_shutup = true;
+	private List<String> shut_up_list = new ArrayList<String>();
+	private int mVolume = -1;
+	private int mMaxVolume;
+	private AudioManager mAudioManager;
+	private GestureDetector mGestureDetector;
+	// 小老虎动画
+	private ImageView tiger_animation;
+	private AnimationDrawable animationDrawable;
+	// 用户的守护等级和守护类型
+	private static String g_lv = "";
+	private static String g_type = "";
+
+	private MommonManageFragment mPlaceFragment;
+	private MommonCountFragment mMommonCountFragment;
+
+	public boolean isPause;
+	public boolean isMommonStart;
+
+	private String loginUserId = "";
+
+	private void initview() {
+		sharedPreferences = getSharedPreferences(APP.MY_SP,
+				Context.MODE_PRIVATE);
+		is_login = sharedPreferences.getString(APP.IS_LOGIN, "").equals("true");
+		getScreenWH();
+		sf = (SurfaceView) findViewById(R.id.video);
+		room_back = (ImageView) findViewById(R.id.room_back);
+		room_back.setOnClickListener(this);
+		viewPager = (ViewPager) findViewById(R.id.room_viewpager);
+		indicator = (PagerSlidingTabStrip) findViewById(R.id.room_indicator);
+		int a = Utils.dip2px(context, 14.0f);
+		indicator.setTabPaddingLeftRight(a);
+		room_guanzhu_num = (TextView) findViewById(R.id.room_guanzhu_num);
+		guanzhu_text = (TextView) findViewById(R.id.guanzhu_text);
+		guanzhu_icon = (ImageView) findViewById(R.id.guanzhu_icon);
+		room_guanzhu = (RelativeLayout) findViewById(R.id.room_guanzhu);
+		room_guanzhu.setOnClickListener(this);
+		pb = (TextView) findViewById(R.id.progress_bar);
+		video_background = (ImageView) findViewById(R.id.video_background);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+				screenWidth, screenWidth * 3 / 4);
+		video_background.setLayoutParams(params);
+		sf.setLayoutParams(params);
+		intpu_layout = (RelativeLayout) findViewById(R.id.input);
+		input_et = (TextView) findViewById(R.id.input_et);
+		input_et.setOnClickListener(this);
+		input_viewstub = (ViewStub) findViewById(R.id.input_viewstub);
+		gift_icon = (ImageView) findViewById(R.id.gift_icon);
+		gift_icon.setOnClickListener(this);
+		gift_button = (RelativeLayout) findViewById(R.id.gift_button);
+		gift_button.setOnClickListener(this);
+		input_icon = (CircularImage) findViewById(R.id.input_icon);
+		input_icon.setOnClickListener(this);
+		gift_viewstub = (ViewStub) findViewById(R.id.gift_viewstub);
+		anchor_viewstub = (ViewStub) findViewById(R.id.anchor_viewstub);
+		ranklist_viewstub = (ViewStub) findViewById(R.id.ranklist_viewstub);
+		shouhulist_viewstub = (ViewStub) findViewById(R.id.shouhulist_viewstub);
+		chooseSongViewStub = (ViewStub) findViewById(R.id.choose_song_viewstub);
+		runwayTextView = (RunTextView) findViewById(R.id.laba_run);
+		down_runwayTextView = (RunTextView) findViewById(R.id.xitongxiaoxi);
+		runwayTextView.getBackground().setAlpha(150);
+		down_runwayTextView.getBackground().setAlpha(150);
+		red_addone = (ImageView) findViewById(R.id.red_addone);
+		messages = new ArrayList<ChatMessage>();
+		primessages = new ArrayList<ChatMessage>();
+		giftmessages = new ArrayList<ChatMessage>();
+		push_right_in = AnimationUtils.loadAnimation(context,
+				R.anim.push_right_in);
+		video_father = (RelativeLayout) findViewById(R.id.video_father);
+		// video_father.setOnClickListener(this);
+		video_more_button = (LinearLayout) findViewById(R.id.video_more_button);
+		video_setting = (ImageView) findViewById(R.id.video_setting);
+		video_shengyin = (ImageView) findViewById(R.id.video_shengyin);
+		video_big = (ImageView) findViewById(R.id.video_big);
+		video_stop = (ImageView) findViewById(R.id.video_stop);
+		video_setting.setOnClickListener(this);
+		video_shengyin.setOnClickListener(this);
+		video_big.setOnClickListener(this);
+		video_stop.setOnClickListener(this);
+		rl_video = (RelativeLayout) findViewById(R.id.rl_video);
+		yinpinmoshi_tv = (TextView) findViewById(R.id.yinpinmoshi_tv);
+		fastsend_gift_img = (ImageView) findViewById(R.id.fastsend_gift_img);
+		fastsend_gift_num = (TextView) findViewById(R.id.fastsend_gift_num);
+		tiger_animation = (ImageView) findViewById(R.id.live_xiaolaohu);
+		tiger_animation.setImageResource(R.drawable.room_tiger_loading);
+		animationDrawable = (AnimationDrawable) tiger_animation.getDrawable();
+		animationDrawable.start();
+		mOptions = new DisplayImageOptions.Builder()
+				.showStubImage(R.drawable.loading_img).cacheInMemory()
+				.cacheOnDisc().build();
+		mImageLoader = ImageLoader.getInstance();
+		mImageLoader.init(ImageLoaderConfiguration.createDefault(context));
+		// 设置用户图像
+		if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+			String url = sharedPreferences.getString(APP.USER_ICON, "");
+			mImageLoader.displayImage(url, input_icon, mOptions);
+		}
+		isPause = false;
+
+		loginUserId = sharedPreferences.getString(APP.USER_ID, "");
+	}
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		setContentView(R.layout.activity_liveroom);
+		shuaping = true;
+		liveroomview = (RelativeLayout) findViewById(R.id.liveroomview);
+		context = this;
+		Intent intent = this.getIntent();
+		room_id = intent.getStringExtra("room_id");
+		mGestureDetector = new GestureDetector(this, new MyGestureListener());
+		mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		mMaxVolume = mAudioManager
+				.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		initview();
+		g_lv = "0";
+		g_type = "0";
+		// 获取房间信息
+		if (Utils.isEmpty(room_id)) {
+			Utils.showToast(LiveRoomActivity.this, "房间不存在！");
+		} else {
+			// 获取视频播放器，首先加载视频
+			getResultUrl();
+			GetRoomInfo();
+		}
+	}
+
+	/**
+	 * 获取实际屏幕的宽高
+	 */
+	public void getScreenWH() {
+		dm = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		screenWidth = dm.widthPixels;
+		screenHeight = dm.heightPixels;
+	}
+
+	/**
+	 * 获取视频流地址
+	 */
+	private void getResultUrl() {
+		RpcRoutine.getInstance().addRpc(RpcEvent.GetRoomClientUrl, handler,
+				sharedPreferences.getString(APP.USER_ID, ""),
+				sharedPreferences.getString(APP.SECRET, ""), room_id);
+		// Runnable getresulturl = new Runnable() {
+		// @Override
+		// public void run() {
+		// try {
+		// String result = Utils.get_result_url(
+		// sharedPreferences.getString(APP.USER_ID, ""),
+		// sharedPreferences.getString(APP.SECRET, ""),
+		// room_id);
+		// Log.i("lvjian", "流地址---------》" + result);
+		// JSONObject obj = new JSONObject(result);
+		// int state = obj.getInt("s");
+		// if (state == 1) {
+		// JSONObject data = obj.getJSONObject("data");
+		// String chaturl = data.getString("chat_url");
+		// chat_url = chaturl.split(":")[0];
+		// port = Integer.parseInt(chaturl.split(":")[1]);
+		// live_url = data.getString("live_url");
+		// stream = data.getString("stream");
+		// handler.sendEmptyMessage(HandlerCmd.HandlerCmd_GetRoomUrlSuccess);
+		// }
+		// } catch (JSONException e) {
+		// e.printStackTrace();
+		// Log.i("lvjian",
+		// "---------------加载视频信息异常,请重新尝试！--------------");
+		// }
+		// }
+		// };
+		// ThreadPoolWrap.getThreadPool().executeTask(getresulturl);
+	}
+
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			// 获取视频流地址成功
+
+			case HandlerCmd.HandlerCmd_GetRoomUrlSuccess:
+
+				chat_url = GlobalData.getInstance().getmRoomCLientUrl().chat_url;
+				port = GlobalData.getInstance().getmRoomCLientUrl().port;
+				live_url = GlobalData.getInstance().getmRoomCLientUrl().live_url;
+				stream = GlobalData.getInstance().getmRoomCLientUrl().stream;
+
+				releaseMediaPlayer();
+				doCleanUp();
+				playVideo();
+				break;
+			case 1121:
+				if (mMediaPlayer != null) {
+					mMediaPlayer.startPlay(live_url + "/" + stream);
+				}
+				break;
+			// 获取房间信息
+			case HandlerCmd.HandlerCmd_GetRoomInfoSuccess:
+
+				timestamp = GlobalData.getInstance().getmRoomInfo().timestamp;
+				openid = GlobalData.getInstance().getmRoomInfo().openid;
+				is_guard = GlobalData.getInstance().getmRoomInfo().is_guard;
+				openkey = GlobalData.getInstance().getmRoomInfo().openkey;
+				is_follow = GlobalData.getInstance().getmRoomInfo().is_follow;
+				anchor_name = GlobalData.getInstance().getmRoomInfo().anchor_name;
+				anchor_id = GlobalData.getInstance().getmRoomInfo().anchor_id;
+				anchor_received_level = GlobalData.getInstance().getmRoomInfo().anchor_received_level;
+				anchor_icon = GlobalData.getInstance().getmRoomInfo().anchor_icon;
+				status = GlobalData.getInstance().getmRoomInfo().status;
+
+				anchor_current = GlobalData.getInstance().getmRoomInfo().anchor_current;
+
+				mMommonUrl = GlobalData.getInstance().getmRoomInfo().mMommonUrl;
+				mMommonPort = GlobalData.getInstance().getmRoomInfo().mMommonPort;
+
+				// 是否显示刷按钮
+				if (!Utils.isEmpty(sharedPreferences.getString(
+						APP.FAST_GIFTNUM, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTPRICE, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTID, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTNUM, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTICON, ""))) {
+					gift_button.setVisibility(0);
+					fastsend_gift_num.setText(sharedPreferences.getString(
+							APP.FAST_GIFTNUM, ""));
+					mImageLoader.displayImage(
+							APP.GIFT_PATH
+									+ sharedPreferences.getString(
+											APP.FAST_GIFTICON, ""),
+							fastsend_gift_img, mOptions);
+				}
+				if (!"1".equals(status)) {
+					rl_video.setVisibility(View.INVISIBLE);
+					yinpinmoshi_tv.setVisibility(0);
+					yinpinmoshi_tv.setText("主播休息了！");
+					pb.setVisibility(8);
+					tiger_animation.setVisibility(8);
+					video_background.setVisibility(8);
+				}
+
+				if (anchor_current != null) {
+					MainTabActivity.setAnchor(anchor_current);
+				}
+				// 初始化聊天
+				chatadapter = new ChatAdapter(LiveRoomActivity.this, messages);
+				// 初始化私聊
+				pri_chatadapter = new ChatAdapter(LiveRoomActivity.this,
+						primessages);
+				chatGiftAdapter = new ChatGiftAdapter(LiveRoomActivity.this,
+						giftmessages);
+				// 初始化标签
+				roomTabAdapter = new RoomTabAdapter(
+						getSupportFragmentManager(), room_id, anchor_id);
+				viewPager.setAdapter(roomTabAdapter);
+				indicator.setViewPager(viewPager);
+				indicator.setSelectedTextColorResource(R.color.title_bg);
+				indicator.setIndicatorColorResource(R.color.title_bg);
+				indicator.setTextSize(getResources().getDimensionPixelSize(
+						R.dimen.livehall_tab_textsize));
+				indicator.setOnPageChangeListener(new OnPageChangeListener() {
+					@Override
+					public void onPageSelected(int current) {
+						// TODO Auto-generated method stub
+						if (current == 0) {
+							intpu_layout.setVisibility(0);
+							// 切换tab更新是否显示gift_button按钮
+							if (!Utils.isEmpty(sharedPreferences.getString(
+									APP.FAST_GIFTNUM, ""))
+									&& !Utils.isEmpty(sharedPreferences
+											.getString(APP.FAST_GIFTPRICE, ""))
+									&& !Utils.isEmpty(sharedPreferences
+											.getString(APP.FAST_GIFTID, ""))
+									&& !Utils.isEmpty(sharedPreferences
+											.getString(APP.FAST_GIFTNUM, ""))
+									&& !Utils.isEmpty(sharedPreferences
+											.getString(APP.FAST_GIFTICON, ""))) {
+								gift_button.setVisibility(0);
+								fastsend_gift_num.setText(sharedPreferences
+										.getString(APP.FAST_GIFTNUM, ""));
+								mImageLoader.displayImage(
+										APP.GIFT_PATH
+												+ sharedPreferences.getString(
+														APP.FAST_GIFTICON, ""),
+										fastsend_gift_img, mOptions);
+							}
+						} else if (current == 1) {
+							intpu_layout.setVisibility(0);
+						} else {
+							intpu_layout.setVisibility(8);
+							gift_button.setVisibility(8);
+						}
+					}
+
+					@Override
+					public void onPageScrolled(int arg0, float arg1, int arg2) {
+					}
+
+					@Override
+					public void onPageScrollStateChanged(int arg0) {
+					}
+				});
+				// 设置关注
+				if (is_follow != 0) {
+					guanzhu_text.setTextColor(getResources().getColor(
+							R.color.huise_zi));
+					guanzhu_text.setText("粉丝榜");
+					guanzhu_icon.setVisibility(8);
+					room_guanzhu_num.setTextColor(getResources().getColor(
+							R.color.title_bg));
+					room_guanzhu.setBackgroundResource(R.color.white);
+				}
+				editmanager = new EditManager();
+				editmanager.initEditManager(LiveRoomActivity.this,
+						input_viewstub, intpu_layout, room_id, anchor_id,
+						anchor_name);
+				giftmanager = GiftManager.getInstance();
+				giftmanager.initGiftManager(LiveRoomActivity.this,
+						gift_viewstub, intpu_layout, anchor_id, room_id,
+						anchor_name, gift_button, fastsend_gift_img,
+						fastsend_gift_num, viewPager, is_guard);
+				anchormanager = AnchorManager.getInstance();
+				anchormanager.initAnchorManager(LiveRoomActivity.this,
+						anchor_viewstub, anchor_id, room_id);
+				rankListManager = RankListManager.getInstance();
+				rankListManager.initRankListManager(LiveRoomActivity.this,
+						ranklist_viewstub, anchor_id, room_id);
+				chooseSongManager = ChooseSongManager.getInstance();// 初始化点歌管理类
+				chooseSongManager.init(chooseSongViewStub, context, room_id,
+						anchor_id);
+				shouHuManager = ShouHuManager.getInstance();
+				shouHuManager.initShouHuManager(LiveRoomActivity.this,
+						shouhulist_viewstub, anchor_id, room_id);
+				pub_chat_listview = PubChatFragment.getPubchatListView();
+				pri_chat_listview = PriChatFragment.getPrichatListView();
+				// 公聊不为空
+				if (pub_chat_listview != null) {
+					pub_chat_listview.setAdapter(chatadapter);
+				}
+				if (pri_chat_listview != null) {
+					pri_chat_listview.setAdapter(pri_chatadapter);
+				}
+				chat_gift_item = PubChatFragment.getChat_gift_item();
+
+				if (chat_gift_item != null) {
+					chat_gift_item.setAdapter(chatGiftAdapter);
+				}
+				intpu_layout.setVisibility(0);
+				// 房间信息获取成功后，向历史观看插入这一记录
+				mRunwayManager = RunwayManager.getInstance();
+				down_mRunwayManager = DownRunwayManager.getInstance();
+				mRunwayManager.init(runwayTextView, LiveRoomActivity.this);
+				new MyTask().execute();
+				down_mRunwayManager.init(down_runwayTextView,
+						LiveRoomActivity.this);
+				// 获取房间信息成功后，获取主播红豆数目和主播的关注数目
+				get_hearts_and_fans_num();
+				// 连接socket
+				SocketStart();
+				// 连接socket的同时，获取守护信息
+				GetShouhu();
+				Get_Shut_Up_List();
+				break;
+			case GETGUANZHUN_NUM_OK:
+				room_guanzhu_num.setText(guanzhu_num);
+				break;
+			case GETGUANZHUN_NUM_ERROR:
+				Log.i("lvjian", "---------获取主播红豆和关注数失败或异常-------");
+				break;
+			case GUANZHU_OK:
+				// 动画切换关东状态
+				guanzhu_text.setTextColor(getResources().getColor(
+						R.color.huise_zi));
+				guanzhu_icon.setVisibility(8);
+				guanzhu_text.setText("粉丝榜");
+				room_guanzhu_num.setTextColor(getResources().getColor(
+						R.color.title_bg));
+				room_guanzhu_num.setText(guanzhu_num);
+				room_guanzhu.setBackgroundResource(R.color.white);
+				Animation animation = AnimationUtils.loadAnimation(
+						LiveRoomActivity.this, R.anim.title_enter);
+				room_guanzhu.startAnimation(animation);
+				break;
+			case GUANZHU_ERROR:
+				Log.i("lvjian", "---------关注失败-------");
+				break;
+			// 接受聊天消息
+			case GET_MSG:
+				ActivityMsg activityMsg = (ActivityMsg) msg.obj;
+				ParseMessage m = new ParseMessage(activityMsg, indicator,LiveRoomActivity.this, anchor_name);
+				if (activityMsg.getTid() == 14) {// 寄语消息
+					mRunwayManager.handleMessage(m.getMessage());
+					if (loginUserId.equals(m.getMessage().getT_id())) {
+						// 调用查询金币方法
+						UpdateBeans();
+					}
+				}
+				if (activityMsg.getTid() == 3) {
+					boolean flag = sharedPreferences
+							.getString(APP.IS_LOGIN, "").equals("true");
+					if (!flag) {
+						return;
+					}
+
+					String msgBody = activityMsg.getMsg();
+					try {
+						JSONObject object = new JSONObject(msgBody);
+
+						int giftid = object.getInt("gift_id");
+
+						if (giftid == 1742 || giftid == 1743 || giftid == 1741) {
+							SocketMommonStart();
+						}
+
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				}
+
+				if (activityMsg.getTid() == 230) {
+					// Log.i("lvjian", "activityMsg---中奖消息--230--msg---->"
+					// + activityMsg.getMsg());
+				}
+
+				// 主播上播
+				if (activityMsg.getTid() == 27) {
+					rl_video.setVisibility(0);
+					yinpinmoshi_tv.setVisibility(8);
+					String msgBody = activityMsg.getMsg();
+					try {
+						JSONObject object = new JSONObject(msgBody);
+						live_url = object.getString("watchPull");
+						stream = object.getString("stream_name");
+						handler.sendEmptyMessage(1121);
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				// 主播下播
+				if (activityMsg.getTid() == 28) {
+					rl_video.setVisibility(View.INVISIBLE);
+					yinpinmoshi_tv.setVisibility(0);
+					yinpinmoshi_tv.setText("主播休息了！");
+				}
+				// 广播
+				if (activityMsg.getTid() == 36) {
+					down_mRunwayManager.handleMessage(m.getMessage());
+					if (timer_run_bottom != null) {
+						timer_run_bottom.cancel();
+					}
+					timerruntextbottom();
+					return;
+				}
+				// tid==42和tid==50（是系统消息和抽魔幻卡牌中奖的消息）
+				if (activityMsg.getTid() == 42 || activityMsg.getTid() == 50) {
+					mRunwayManager.handleMessage(m.getMessage());
+					// 设置礼物显示定时器
+					if (timer_run_top != null) {
+						timer_run_top.cancel();
+					}
+					timerruntexttop();
+					return;
+				}
+
+				// 被踢出房间
+				if (activityMsg.getTid() == 4) {
+					// 如果提的人是用户，就退出直播间
+					if (!Utils.isEmpty(m.getMessage().getContent())
+							&& "踢".equals(m.getMessage().getContent())) {
+						releaseMediaPlayer();
+						String name = m.getMessage().getSay();
+						repeatlogin_dialog(name);
+					}
+				}
+				// 账号重复登录
+				if (activityMsg.getTid() == 10) {
+					// Log.i("lvjian", "------10------>" +
+					// activityMsg.getMsg());
+					releaseMediaPlayer();
+					repeatlogin_dialog("账号重复登录！");
+				}
+				// 不为空，并且不为礼物，聊天
+				if (m.getMessage() != null) {
+					if (m.getMessage().getTid() == 33) {
+						// 如果是幸运礼物中奖了，就刷新
+						// Log.i("lvjian","-----消息-中奖内容-------->"+m.getMessage().getTname());
+						if (!Utils.isEmpty(m.getMessage().getTname())) {
+							messages.add(m.getMessage());
+							chatadapter.notifyDataSetChanged();
+						}
+
+						if (giftmessages.size() == 0) {
+							giftmessages.add(m.getMessage());
+							if (chat_gift_item.getChildAt(0) != null) {
+								chatGiftAdapter
+										.AppearAnimPosition(chat_gift_item
+												.getChildAt(0));
+							}
+						} else if (giftmessages.size() == 1) {
+							// 如果是同一人就移除旧的直接加载新的
+							if (giftmessages.get(0).getSname()
+									.equals(m.getMessage().getSname())) {
+								giftmessages.remove(0);
+								giftmessages.add(m.getMessage());
+							} else {
+								giftmessages.add(m.getMessage());
+								if (chat_gift_item.getChildAt(1) != null) {
+									chatGiftAdapter
+											.AppearAnimPosition(chat_gift_item
+													.getChildAt(1));
+								}
+							}
+						} else if (giftmessages.size() == 2) {
+							// 如果有两个用户刷，新来的用户是其中之一，直接覆盖，如果不是其中之一移除第一个，添加到最后
+							if (giftmessages.get(0).getSname()
+									.equals(m.getMessage().getSname())) {
+								// 名字相同，礼物也相同就累计（替换这个位置的）
+								if (giftmessages.get(0).getGift_id()
+										.equals(m.getMessage().getGift_id())) {
+									giftmessages.set(0, m.getMessage());
+								} else {
+									giftmessages.remove(0);
+									giftmessages.add(m.getMessage());
+									chatGiftAdapter
+											.AppearAnimPosition(chat_gift_item
+													.getChildAt(1));
+								}
+
+							} else if (giftmessages.get(1).getSname()
+									.equals(m.getMessage().getSname())) {
+								if (giftmessages.get(1).getGift_id()
+										.equals(m.getMessage().getGift_id())) {
+									giftmessages.set(1, m.getMessage());
+								}
+							} else {
+								giftmessages.remove(0);
+								giftmessages.add(m.getMessage());
+								chatGiftAdapter
+										.AppearAnimPosition(chat_gift_item
+												.getChildAt(1));
+							}
+						}
+						chat_gift_item.setVisibility(0);
+						// 设置礼物显示定时器
+						if (timer != null) {
+							timer.cancel();
+						}
+						timer();
+						// // 设置他的高度
+						// if (giftmessages.size() <= 3) {
+						// RelativeLayout.LayoutParams layoutparams =
+						// (RelativeLayout.LayoutParams) chat_gift_item
+						// .getLayoutParams();
+						// layoutparams.height = layoutparams.WRAP_CONTENT;
+						// chat_gift_item.setLayoutParams(layoutparams);
+						// } else {
+						// RelativeLayout.LayoutParams layoutparams =
+						// (RelativeLayout.LayoutParams) chat_gift_item
+						// .getLayoutParams();
+						// int a = Utils.dip2px(LiveRoomActivity.this, 100.0F);
+						// layoutparams.height = a;
+						// chat_gift_item.setLayoutParams(layoutparams);
+						// }
+						chatGiftAdapter.notifyDataSetChanged();
+						/*
+						 * if (chat_gift_item != null) { chat_gift_item
+						 * .setTranscriptMode
+						 * (ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+						 * chat_gift_item.setCacheColorHint(0); }
+						 */
+					} else {
+						// 私聊
+						if (activityMsg.getTid() == 1) {
+							primessages.add(m.getMessage());
+							pri_chatadapter.notifyDataSetChanged();
+							if (pri_edit_list != null) {
+								pri_edit_list
+										.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+								pri_edit_list.setCacheColorHint(0);
+							}
+							if (pri_chat_listview != null) {
+								pri_chat_listview
+										.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+								pri_chat_listview.setCacheColorHint(0);
+							}
+						} else {
+							messages.add(m.getMessage());
+							chatadapter.notifyDataSetChanged();
+							if (pub_chat_listview != null) {
+								pub_chat_listview
+										.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+								pub_chat_listview.setCacheColorHint(0);
+							}
+							if (edit_listview != null) {
+								edit_listview
+										.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+								edit_listview.setCacheColorHint(0);
+							}
+						}
+					}
+				}
+				break;
+			case HandlerCmd.HandlerCmd_GetRoomInfoException:
+				Utils.showToast(LiveRoomActivity.this, "获取房间信息失败");
+				break;
+			case HandlerCmd.HandlerCmd_GetRoomInfoFailed:
+				String m1 = "";
+				m1 = msg.obj.toString();
+				repeatlogin_dialog(m1);
+				if ("您的账号已过期，请重新登陆！".equals(m1)) {
+					loginOut();
+				}
+				break;
+			// socket异常，断开连接（断线重连）
+			case HandlerCmd.HandlerCmd_RoomChatClientException:
+				SocketStart();
+				GetShouhu();
+				break;
+			case HandlerCmd.HandlerCmd_RoomMommonClientException:
+				break;
+			// 快速刷礼物
+			case 9:
+				Utils.showToast(LiveRoomActivity.this, msg.obj.toString());
+				break;
+			case 10:
+				Animation push_left_out = AnimationUtils.loadAnimation(context,
+						R.anim.pust_left_out);
+				chat_gift_item.startAnimation(push_left_out);
+				push_left_out.setAnimationListener(new AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+					}
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						giftmessages.clear();
+						chatGiftAdapter.clearMap();
+						chat_gift_item.setVisibility(8);
+					}
+				});
+				break;
+			// 获取禁言列表成功
+			case 11:
+				String us_id = sharedPreferences.getString(APP.USER_ID, "");
+				if (shut_up_list.size() > 0) {
+					for (int i = 0; i < shut_up_list.size(); i++) {
+						if (shut_up_list.get(i).equals(us_id)) {
+							is_shutup = false;
+						}
+					}
+				}
+				break;
+			// 获取禁言列表失败
+			case 12:
+				Log.i("lvjian", "-----获取禁言列表失败-------");
+				break;
+			// 关闭下面的滚动条
+			case 142:
+				down_runwayTextView.setVisibility(8);
+				break;
+			case 143:
+				runwayTextView.setVisibility(8);
+				break;
+			case 20:
+				yurenjiezhongjiang(msg.obj.toString(), 0);
+				break;
+			case 21:
+				yurenjiezhongjiang(msg.obj.toString(), 1);
+				break;
+			case 22:
+				yurenjiezhongjiang(msg.obj.toString(), 2);
+				break;
+			case 23:
+				yurenjiezhongjiang(msg.obj.toString(), 3);
+				break;
+			case 24:
+				yurenjiezhongjiang(msg.obj.toString(), 4);
+				break;
+			default:
+				break;
+			}
+		};
+	};
+
+	/**
+	 * 更新乐币
+	 */
+	private void UpdateBeans() {
+		Runnable updatebeansrun = new Runnable() {
+			public void run() {
+				try {
+					String result = Utils.getuserinfo(loginUserId,
+							sharedPreferences.getString(APP.SECRET, ""));
+					JSONObject obj = new JSONObject(result);
+					int s = obj.getInt("s");
+					if (s == 1) {
+						JSONObject data = obj.getJSONObject("data");
+						String beans = data.getString("beans");
+						Editor editor = sharedPreferences.edit();
+						editor.putString(APP.BEANS, beans);
+						editor.commit();
+					} 
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(updatebeansrun);
+	}
+	private void doCleanUp() {
+		mVideoWidth = 0;
+		mVideoHeight = 0;
+		mIsVideoReadyToBePlayed = false;
+		mIsVideoSizeKnown = false;
+	}
+
+	/**
+	 * 播放视频
+	 */
+	private void playVideo() {
+		// if (!is_play) {
+		// return;
+		// }
+		doCleanUp();
+		try {
+			mMediaPlayer = new PlayerViewController(this, this.pb,
+					this.tiger_animation, this.video_background);
+			mMediaPlayer.initPlayerView();
+			mMediaPlayer.startPlay(live_url + "/" + stream);
+
+			//
+			// String
+			// url="rtmp://vdown.0058.com/RoomVideoChat/94a0823e8846f241350a056dd6809a12";
+			// mMediaPlayer.startPlay(url);
+			// pb.setVisibility(8);
+			// video_background.setVisibility(8);
+		} catch (Throwable e) {
+			Utils.showToast(this, "啊哦，视频库加载失败了!");
+			finish();
+		}
+	}
+
+	private void releaseMediaPlayer() {
+		if (mMediaPlayer != null) {
+			mMediaPlayer.destroyPlayer();
+			mMediaPlayer = null;
+		}
+	}
+
+	/**
+	 * 异步任务，插入历史观看数据
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	class MyTask extends AsyncTask<Void, Void, Void> {
+		// 准备处理
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			MyOpenHelper openHelper = new MyOpenHelper(LiveRoomActivity.this);
+			db = openHelper.getWritableDatabase();
+		}
+
+		// 开始处理
+		@Override
+		protected Void doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			String time = Utils.getCurrrenDate();
+			Historys his = new Historys(APP.POST_URL_ROOT + anchor_icon,
+					anchor_name, anchor_received_level, time, anchor_id);
+			insertData(his);
+			return null;
+		}
+
+		// 处理结束
+		@Override
+		protected void onPostExecute(Void result) {
+			// TODO Auto-generated method stub
+			super.onPostExecute(result);
+			closeDataBase();
+		}
+	}
+
+	// 插入历史观看记录
+	private long insertData(Historys his) {
+		// 之前有该主播观看记录，先删除记录再加入最新记录
+		db.delete(APP.TABLE_NAME, "hisRoom=?",
+				new String[] { his.getRoom_id() });
+		ContentValues values = new ContentValues();
+		values.put("hisImg", his.getImg_url());
+		values.put("hisName", his.getName());
+		values.put("hisLv", his.getLv_url());
+		values.put("hisTime", his.getTime());
+		values.put("hisRoom", his.getRoom_id());
+		return db.insert(APP.TABLE_NAME, null, values);
+	}
+
+	// 关闭数据库
+	private void closeDataBase() {
+		if (null != db) {
+			db.close();
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		isPause = true;
+		MobclickAgent.onPause(this);
+
+		if (mPlaceFragment != null && isMommonStart) {
+			mPlaceFragment.doPause();
+		}
+
+		// 如果是关闭finish
+		if (isFinishing()) {
+			SoundManager.getIntance().stopDropMusic();
+			releaseMediaPlayer();
+			doCleanUp();
+			if (client != null) {
+				client.disconnect();
+				client = null;
+			}
+			if (mommonclient != null) {
+				mommonclient.disconnect();
+				mommonclient = null;
+			}
+
+			if (editmanager != null) {
+				editmanager.exit();
+			}
+			if (giftmanager != null) {
+				giftmanager.exit();
+			}
+			if (anchormanager != null) {
+				anchormanager.exit();
+			}
+			if (rankListManager != null) {
+				rankListManager.exit();
+			}
+			if (shouHuManager != null) {
+				shouHuManager.exit();
+			}
+			if (chooseSongManager != null) {
+				chooseSongManager.exit();
+			}
+			AnchorZhuboFragment.closeGetRedBean();
+			// 关闭定时器
+			if (timer != null) {
+				timer.cancel();
+			}
+			if (timer_run_bottom != null) {
+				timer_run_bottom.cancel();
+			}
+			if (timer_run_top != null) {
+				timer_run_top.cancel();
+			}
+			if (timershuaping != null) {
+				timershuaping.cancel();
+			}
+
+			// 关闭财神相关
+			if (mPlaceFragment != null) {
+				mPlaceFragment.doGameOver();
+				showMommonView(false);
+				showMommonCountView(false);
+			}
+
+		} else {
+			// if ((this.mMediaPlayer != null) && (this.mMediaPlayer.isPlay()))
+			// {
+			// this.mMediaPlayer.stopPlay();
+			// }
+		}
+
+	}
+
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		isPause = false;
+		MobclickAgent.onResume(this);
+
+		if (mPlaceFragment != null && isMommonStart) {
+			mPlaceFragment.doResume();
+		}
+		doCleanUp();
+		if ((this.mMediaPlayer != null) && (!this.mMediaPlayer.isPlay())) {
+			mMediaPlayer.startPlay(live_url + "/" + stream);
+		}
+		// 如果用户登录成功，重新加载房间数据
+		if (!is_login
+				&& sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+			if (Utils.isEmpty(room_id)) {
+				Utils.showToast(LiveRoomActivity.this, "房间不存在！");
+			} else {
+				GetRoomInfo();
+			}
+			// 设置用户图像
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				String url = sharedPreferences.getString(APP.USER_ICON, "");
+				mImageLoader.displayImage(url, input_icon, mOptions);
+			}
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.room_back:
+			finish();
+			break;
+		// 点击关注按钮
+		case R.id.room_guanzhu:
+			// 缺用户是否登录
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				if (is_follow == 0) {
+					FollowAnchor();
+				}
+			} else {
+				Utils.recharge(LiveRoomActivity.this);
+			}
+			break;
+		// 输入框
+		case R.id.input_et:
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				intpu_layout.setVisibility(8);
+				SiLiao siliaoaa = new SiLiao();
+				editmanager.showLiveInputView("0", siliaoaa);
+				edit_listview = editmanager.getEditListView();
+				edit_listview.setAdapter(chatadapter);
+				// 私聊
+				pri_edit_list = editmanager.getPri_edit_list();
+				pri_edit_list.setAdapter(pri_chatadapter);
+			} else {
+				Utils.recharge(LiveRoomActivity.this);
+			}
+			break;
+		// 礼物
+		case R.id.gift_icon:
+			// 显示礼物列表
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				giftmanager.showgiftView(1, anchor_id, anchor_name);
+				intpu_layout.setVisibility(8);
+			} else {
+				Utils.recharge(LiveRoomActivity.this);
+			}
+			// showMommonView(true) ;
+			break;
+		// 主播信息
+		case R.id.input_icon:
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				anchormanager.showanchorView();
+				setGuideResId(3);
+			} else {
+				Utils.recharge(LiveRoomActivity.this);
+			}
+			break;
+		// 点击显示返回和设置等按钮
+		// case R.id.video_father:
+		// if (button_is_show) {
+		// video_more_button.setVisibility(0);
+		// room_back.setVisibility(0);
+		// button_is_show = false;
+		// } else {
+		// video_more_button.setVisibility(8);
+		// room_back.setVisibility(8);
+		// button_is_show = true;
+		// }
+		// break;
+		case R.id.video_setting:
+
+			break;
+		case R.id.video_shengyin:
+			if (is_Audiomode) {
+				rl_video.setVisibility(View.VISIBLE);
+				yinpinmoshi_tv.setVisibility(8);
+				is_Audiomode = false;
+			} else {
+				rl_video.setVisibility(View.INVISIBLE);
+				is_Audiomode = true;
+				yinpinmoshi_tv.setVisibility(0);
+			}
+			break;
+		case R.id.video_big:
+			if (is_fullscreen) {
+				mMediaPlayer.setVideoSize(3);
+				is_fullscreen = false;
+				intpu_layout.setVisibility(0);
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);// 竖屏
+				quitFullScreen();
+				video_stop.setVisibility(0);
+				if (!Utils.isEmpty(sharedPreferences.getString(
+						APP.FAST_GIFTNUM, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTPRICE, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTID, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTNUM, ""))
+						&& !Utils.isEmpty(sharedPreferences.getString(
+								APP.FAST_GIFTICON, ""))) {
+					gift_button.setVisibility(0);
+					fastsend_gift_num.setText(sharedPreferences.getString(
+							APP.FAST_GIFTNUM, ""));
+					mImageLoader.displayImage(
+							APP.GIFT_PATH
+									+ sharedPreferences.getString(
+											APP.FAST_GIFTICON, ""),
+							fastsend_gift_img, mOptions);
+				}
+				video_shengyin.setVisibility(0);
+				// video_setting.setVisibility(0);
+				video_big.setImageResource(R.drawable.video_big);
+				room_back.setImageResource(R.drawable.video_back);
+				RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+						screenWidth, screenWidth * 3 / 4);
+				video_background.setLayoutParams(params);
+			} else {
+				if (mMediaPlayer != null) {// 判断播放器不为空
+					mMediaPlayer.setVideoSize(2);
+					is_fullscreen = true;
+					intpu_layout.setVisibility(8);
+					gift_button.setVisibility(8);
+					setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);// 横屏
+					getWindow().setFlags(
+							WindowManager.LayoutParams.FLAG_FULLSCREEN,
+							WindowManager.LayoutParams.FLAG_FULLSCREEN);// 设置全屏
+					video_stop.setVisibility(8);
+					video_shengyin.setVisibility(8);
+					// video_setting.setVisibility(8);
+					video_big.setImageResource(R.drawable.quitfullscreen);
+					room_back.setImageResource(R.drawable.video_back_big);
+					RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+							LayoutParams.MATCH_PARENT,
+							LayoutParams.MATCH_PARENT);
+					video_background.setLayoutParams(params);
+				}
+			}
+			break;
+		case R.id.video_stop:
+			MainTabActivity.SetAnchorNull();
+			finish();
+			break;
+		// 刷礼物快捷图标
+		case R.id.gift_button:
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				// 判断用户的钱够不够
+				String beans = sharedPreferences.getString(APP.BEANS, "");
+				String num = sharedPreferences.getString(APP.FAST_GIFTNUM, "");
+				String price = sharedPreferences.getString(APP.FAST_GIFTPRICE,
+						"");
+				int user_beans = 0;
+				int giftnum = 0;
+				int giftprice = 0;
+				if (!Utils.isEmpty(beans)) {
+					user_beans = Integer.parseInt(beans);
+				}
+				if (!Utils.isEmpty(num)) {
+					giftnum = Integer.parseInt(num);
+				}
+				if (!Utils.isEmpty(price)) {
+					giftprice = Integer.parseInt(price);
+				}
+				String uid = sharedPreferences.getString(APP.FAST_GIFTID, "");
+				if ("1704".equals(uid) || "1705".equals(uid)
+						|| "1702".equals(uid)) {
+					if (is_guard == 1) {
+						// 判断显示刷礼物按钮
+						if (user_beans >= (giftnum * giftprice)) {
+							FastSendGift();
+						} else {
+							// 用户钱不够
+							Utils.Moneynotenough(context, "余额不足!", room_id);
+						}
+					} else {
+						tequanliwu("您不是守护，不能赠专属礼物！");
+					}
+				} else {
+					// 判断显示刷礼物按钮
+					if (user_beans >= (giftnum * giftprice)) {
+						FastSendGift();
+					} else {
+						// 用户钱不够
+						Utils.Moneynotenough(context, "余额不足!", room_id);
+					}
+				}
+
+			} else {
+				Utils.recharge(LiveRoomActivity.this);
+			}
+
+			break;
+		default:
+			break;
+		}
+	}
+
+	/**
+	 * 
+	 * 获取红豆和关注数量
+	 */
+	private void get_hearts_and_fans_num() {
+		Runnable heartsandfansrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String roominfo = Utils.getheartsandfansnum(anchor_id);
+					JSONObject room_info = new JSONObject(roominfo);
+					int state = room_info.getInt("s");
+					JSONObject date = room_info.getJSONObject("data");
+					if (state == 1) {
+						guanzhu_num = date.getString("fans");
+						handler.sendEmptyMessage(GETGUANZHUN_NUM_OK);
+					} else {
+						handler.sendEmptyMessage(GETGUANZHUN_NUM_ERROR);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+					// 异常处理
+					handler.sendEmptyMessage(GETGUANZHUN_NUM_ERROR);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(heartsandfansrun);
+	}
+
+	/**
+	 * 
+	 * 获取房间信息
+	 */
+	private void GetRoomInfo() {
+
+		RpcRoutine.getInstance().addRpc(RpcEvent.GetRoomInfo, handler,
+				sharedPreferences.getString(APP.USER_ID, ""),
+				sharedPreferences.getString(APP.SECRET, ""), room_id);
+
+		// Log.i("lvjian", "获取房间信息！");
+		// Runnable roominforun = new Runnable() {
+		// @Override
+		// public void run() {
+		// try {
+		// String roominfo = Utils.get_room_Info(
+		// sharedPreferences.getString(APP.USER_ID, ""),
+		// sharedPreferences.getString(APP.SECRET, ""),
+		// room_id);
+		// Log.i("lvjian", "获取房间信息--------》" + roominfo);
+		// JSONObject room_info = new JSONObject(roominfo);
+		// int state = room_info.getInt("s");
+		// if (state == 1) {
+		// JSONObject data = room_info.getJSONObject("data");
+		// timestamp = data.getString("timestamp");
+		// openid = data.getString("openid");
+		// is_guard = data.getInt("is_guard");
+		// openkey = data.getString("openkey");
+		// is_follow = data.getInt("is_followed");
+		// JSONObject anchor = data.getJSONObject("anchor");
+		// anchor_name = anchor.getString("nickname");
+		// anchor_id = anchor.getString("id");
+		// anchor_received_level = anchor
+		// .getString("received_level");
+		// JSONObject room = data.getJSONObject("room");
+		// anchor_icon = room.getString("poster_url");
+		// status = room.getString("status");
+		// Gson gson = new Gson();
+		// anchor_current = gson.fromJson(room.toString(),
+		// AnchorInfo.class);
+		//
+		// JSONObject mgmsvever = data.getJSONObject("gserver");
+		//
+		// mMommonUrl = mgmsvever.getString("ip");
+		// mMommonPort = mgmsvever.getInt("port");
+		// handler.sendEmptyMessage(HandlerCmd.HandlerCmd_GetRoomInfoSuccess);
+		// } else {
+		// // 如果获取用户信息失败，弹出什么原因
+		// String data = "";
+		// data = room_info.getString("data");
+		// Message m = new Message();
+		// m.what = HandlerCmd.HandlerCmd_GetRoomInfoFailed;
+		// m.obj = data;
+		// handler.sendMessage(m);
+		// // handler.sendEmptyMessage(GETROOMINFO_ERROR);
+		// }
+		// } catch (JSONException e) {
+		// e.printStackTrace();
+		// handler.sendEmptyMessage(HandlerCmd.HandlerCmd_GetRoomInfoException);
+		// }
+		// }
+		// };
+		// ThreadPoolWrap.getThreadPool().executeTask(roominforun);
+	}
+
+	/**
+	 * 关注主播
+	 */
+	private void FollowAnchor() {
+		Runnable guanzhurun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.follow(
+							sharedPreferences.getString(APP.USER_ID, ""),
+							sharedPreferences.getString(APP.SECRET, ""),
+							anchor_id);
+					JSONObject data = new JSONObject(result);
+					int state = data.getInt("s");
+					if (state == 1) {
+						guanzhu_num = data.getInt("sum") + "";
+						handler.sendEmptyMessage(GUANZHU_OK);
+					} else {
+						handler.sendEmptyMessage(GUANZHU_ERROR);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+					handler.sendEmptyMessage(GUANZHU_ERROR);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(guanzhurun);
+	}
+
+	// 连接聊天服务器
+	public void SocketStart() {
+		Runnable socketstartrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					// 连接socket服务器
+					if (client != null) {
+						client.disconnect();
+						client = null;
+					}
+					client = new BaseClient();
+
+					if (APP.IS_DEMO == 0) {
+						chat_url = "192.168.1.201";
+					}
+					// client.start(chat_url, port, handler);
+					client.start(chat_url, port, handler, GET_MSG,
+							HandlerCmd.HandlerCmd_RoomChatClientException);
+					JsonObject data = new JsonObject();
+					data.addProperty("userid", openid);
+					data.addProperty("roomid", room_id);
+					data.addProperty("timestamp", timestamp + "");
+					data.addProperty("openkey", openkey);
+					data.addProperty("clienttype", 1);
+					String message = data.toString();
+					byte[] request = Utils.getBytes(message, GET_MSG);
+					// byte[] request = Utils.getBytes(message, 7);
+					client.sendmsg(request);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(socketstartrun);
+	}
+
+	/**
+	 * 返回键的监听
+	 */
+	@Override
+	public void onBackPressed() {
+
+		if (editmanager != null && editmanager.getshowing()) {
+			editmanager.goneliveInputview();
+			return;
+		}
+		if (giftmanager != null && giftmanager.getshowing()) {
+			giftmanager.gonegiftview();
+			return;
+		}
+		if (anchormanager != null && anchormanager.getshowing()) {
+			anchormanager.goneanchortview();
+			return;
+		}
+		if (rankListManager != null && rankListManager.getshowing()) {
+			rankListManager.goneranklistview();
+			return;
+		}
+		if (chooseSongManager != null && chooseSongManager.isIsshowing()) {
+
+			chooseSongManager.close();
+			return;
+		}
+		if (shouHuManager != null && shouHuManager.getshowing()) {
+			shouHuManager.goneshouhulistview();
+			return;
+		}
+
+		this.finish();
+	}
+
+	/**
+	 * 发送消息
+	 * 
+	 * @param text
+	 */
+	public static void sendmsg(String text, EditText edittext,
+			String chat_type, SiLiao siliao) {
+		// 用户没有登录
+		if (!sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+			Utils.recharge(context);
+			return;
+		}
+		if (Utils.isEmpty(text)) {
+			Utils.showToast(context, "说话不能为空哦");
+			return;
+		}
+		user_cost_level = sharedPreferences.getString(APP.USER_CLEVEL, "");
+		int cl = 0;
+		if (!Utils.isEmpty(user_cost_level)) {
+			cl = Integer.parseInt(user_cost_level);
+		}
+		if (!is_shutup) {
+			Utils.showToast(context, "您被禁言了！");
+			return;
+		}
+		// 做个时间定时器 防止刷屏
+		if (shuaping) {
+			shuaping = false;
+			timershuaping();
+		} else {
+			Utils.showToast(context, "您的发言过于频繁！");
+			return;
+		}
+		// 区分私聊和公聊
+		if ("1".equals(chat_type)) {
+			if (cl < 3) {
+				Utils.showToast(context, "三富以下不能私聊！");
+				return;
+			}
+			JsonObject chat = new JsonObject();
+			chat.addProperty("t_stealth", "0");
+			chat.addProperty("s_stealth", "0");
+			chat.addProperty("vip_lv", sharedPreferences.getInt(APP.VIPLV, 0));
+			chat.addProperty("g_level", g_lv);
+			chat.addProperty("g_type", g_type);
+			chat.addProperty("sname",
+					sharedPreferences.getString(APP.NICKNAME, ""));
+			chat.addProperty("suid",
+					sharedPreferences.getString(APP.USER_ID, ""));
+			if (siliao != null) {
+				chat.addProperty("tuid", siliao.getId());
+				chat.addProperty("tname", siliao.getName());
+			} else {
+				chat.addProperty("tuid", anchor_id);
+				chat.addProperty("tname", anchor_name);
+			}
+
+			chat.addProperty("tid", chat_type);
+			chat.addProperty("text", text);
+			String hello = chat.toString();
+			byte[] send = Utils.getBytes(hello, 1);
+			edittext.setText("");
+			edittext.clearFocus();
+			// 发送消息
+			client.sendmsg(send);
+		} else {
+
+			// if (cl < 1 && text.length() > 7) {
+			// Utils.showToast(context, "一富不能超过7个字哦!");
+			// return;
+			// }
+			if (text.length() > 30) {
+				Utils.showToast(context, "您一次说的话太多了!");
+				return;
+			}
+			JsonObject chat = new JsonObject();
+			chat.addProperty("t_stealth", "0");
+			chat.addProperty("s_stealth", "0");
+			chat.addProperty("vip_lv", sharedPreferences.getInt(APP.VIPLV, 0));
+			chat.addProperty("g_level", g_lv);
+			chat.addProperty("g_type", g_type);
+			chat.addProperty("sname",
+					sharedPreferences.getString(APP.NICKNAME, ""));
+			chat.addProperty("suid",
+					sharedPreferences.getString(APP.USER_ID, ""));
+			if (siliao != null) {
+				chat.addProperty("tuid", siliao.getId());
+				chat.addProperty("tname", siliao.getName());
+			} else {
+				chat.addProperty("tuid", "");
+				chat.addProperty("tname", "所有人");
+			}
+
+			chat.addProperty("tid", chat_type);
+			chat.addProperty("text", text);
+			String hello = chat.toString();
+			byte[] send = Utils.getBytes(hello, 2);
+			edittext.setText("");
+			edittext.clearFocus();
+			// 发送消息
+			client.sendmsg(send);
+		}
+
+	}
+
+	/**
+	 * 赠送红豆的动画
+	 */
+	public static void startdonghua() {
+		final ImageView hondou = new ImageView(context);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+				100, 100);
+		hondou.setLayoutParams(params);
+		hondou.setImageResource(R.drawable.red_bean);
+		liveroomview.addView(hondou);
+		TranslateAnimation animation = new TranslateAnimation(screenWidth,
+				(screenWidth * 3 / 8), screenHeight, (screenWidth * 1 / 4));
+		ScaleAnimation scaleAnimation = new ScaleAnimation(0.1f, 1.0f, 0.1f,
+				1.0f, Animation.RELATIVE_TO_SELF, 0.5f,
+				Animation.RELATIVE_TO_SELF, 0.5f);
+		AlphaAnimation alphaGlow = new AlphaAnimation(0, 1);
+		AnimationSet set = new AnimationSet(true);
+		set.addAnimation(alphaGlow);
+		set.addAnimation(scaleAnimation);
+		set.addAnimation(animation);
+		// 设置动画时间 (作用到每个动画)
+		set.setDuration(1000);
+		set.setFillAfter(true);
+		hondou.startAnimation(set);
+		set.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationStart(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationRepeat(Animation arg0) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onAnimationEnd(Animation arg0) {
+				// TODO Auto-generated method stub
+				hondou.clearAnimation();
+				hondou.setVisibility(8);
+				ScaleAnimation scale = new ScaleAnimation(0.5f, 1.0f, 0.5f,
+						1.0f, Animation.RELATIVE_TO_SELF, 0.5f,
+						Animation.RELATIVE_TO_SELF, 0.5f);
+				scale.setDuration(400);
+				scale.setFillAfter(true);
+				red_addone.setVisibility(0);
+				red_addone.startAnimation(scale);
+				scale.setAnimationListener(new AnimationListener() {
+					@Override
+					public void onAnimationStart(Animation arg0) {
+						// TODO Auto-generated method stub
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation arg0) {
+						// TODO Auto-generated method stub
+					}
+
+					@Override
+					public void onAnimationEnd(Animation arg0) {
+						// TODO Auto-generated method stub
+						red_addone.clearAnimation();
+						red_addone.setVisibility(8);
+					}
+				});
+			}
+		});
+	}
+
+	/**
+	 * 显示礼物
+	 * 
+	 */
+	public static void showgift(String anchor_id, String anchor_name, int canku) {
+		if (giftmanager != null) {
+			if (canku == 1) {
+				giftmanager.showgiftView(3, anchor_id, anchor_name);
+			} else {
+				giftmanager.showgiftView(2, anchor_id, anchor_name);
+			}
+		}
+	}
+
+	public static void showfanlist() {
+		if (rankListManager != null) {
+			rankListManager.showranklistView();
+		}
+	}
+
+	public static void showshouhulist() {
+		if (shouHuManager != null) {
+			shouHuManager.showshouhulistView();
+		}
+	}
+
+	// 显示点歌 add by zhongxf 2016年4月8日10:52:54
+	public static void showChooseSong() {
+		if (chooseSongManager != null) {
+			chooseSongManager.showViews();
+		}
+	}
+
+	/**
+	 * 横竖屏切换
+	 */
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);
+	}
+
+	/**
+	 * 退出全屏
+	 */
+	private void quitFullScreen() {
+		final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+		attrs.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().setAttributes(attrs);
+		getWindow()
+				.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+	}
+
+	/**
+	 * 快速刷礼物
+	 * 
+	 * @author lvjian
+	 * 
+	 */
+	private void FastSendGift() {
+		Runnable fastsendgiftrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String user_id = sharedPreferences.getString(APP.USER_ID,
+							"");
+					String secret = sharedPreferences.getString(APP.SECRET, "");
+					String gift_id = sharedPreferences.getString(
+							APP.FAST_GIFTID, "");
+					String gift_num = sharedPreferences.getString(
+							APP.FAST_GIFTNUM, "");
+					String result = Utils.send_present(user_id, secret,
+							anchor_id, gift_id, gift_num + "", room_id, "0",
+							is_guard);
+					JSONObject obj = new JSONObject(result);
+					int s = obj.getInt("s");
+					if (s == 1) {
+						JSONObject data = obj.getJSONObject("data");
+						String beans = data.getString("beans");
+						Editor editor = sharedPreferences.edit();
+						editor.putString(APP.BEANS, beans);
+						// 愚人节整蛊活动中奖消息解析
+						JSONObject aprilfool_info = data
+								.getJSONObject("aprilfool_info");
+						JSONArray sgift = aprilfool_info.getJSONArray("sgift");
+						if (sgift.length() > 0) {
+							if (sgift.length() == 1) {
+								JSONObject one = sgift.getJSONObject(0);
+								String name = one.getString("name");
+								Log.i("lvjian",
+										"==============愚人节活动===============");
+								if ("大智若愚(徽章)".equals(name)) {
+									Message m1 = new Message();
+									m1.what = 21;
+									m1.obj = "获得" + name;
+									handler.sendMessage(m1);
+								} else if ("老爷车座驾（3天）".equals(name)) {
+									Message m2 = new Message();
+									m2.what = 22;
+									m2.obj = "获得" + name;
+									handler.sendMessage(m2);
+								} else {
+									Message m3 = new Message();
+									m3.what = 23;
+									m3.obj = "获得" + name;
+									handler.sendMessage(m3);
+								}
+
+							} else {
+								String name_total = "";
+								for (int i = 0; i < sgift.length(); i++) {
+									JSONObject one1 = sgift.getJSONObject(i);
+									name_total = name_total + ","
+											+ one1.getString("name");
+								}
+								Message m4 = new Message();
+								m4.what = 24;
+								m4.obj = "获得" + name_total;
+								handler.sendMessage(m4);
+							}
+						}
+						JSONArray draw = aprilfool_info.getJSONArray("draw");
+						if (draw.length() > 0) {
+							JSONObject yaoshi = draw.getJSONObject(0);
+							int num = yaoshi.getInt("num");
+							Message m5 = new Message();
+							m5.what = 20;
+							m5.obj = "获得宝箱钥匙 X " + num;
+							handler.sendMessage(m5);
+						}
+						// // 保存快速刷礼物
+						// editor.putString(APP.FAST_GIFTID, gift_id);
+						// editor.putString(APP.FAST_GIFTNUM, gift_num);
+						// editor.putString(APP.FAST_GIFTPRICE,
+						// sharedPreferences
+						// .getString(APP.FAST_GIFTPRICE, ""));
+						editor.commit();
+					} else {
+						Message msg = new Message();
+						msg.what = 9;
+						msg.obj = obj.getString("data");
+						handler.sendMessage(msg);
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Log.i("lvjian",
+							"---------------------------发送礼物异常--------------------------");
+					Message msg = new Message();
+					msg.what = 9;
+					msg.obj = "发送礼物异常";
+					handler.sendMessage(msg);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(fastsendgiftrun);
+	}
+
+	/**
+	 * 显示公聊
+	 */
+	public static void setcurrentpubchat() {
+		if (roomTabAdapter != null && viewPager != null) {
+			viewPager.setCurrentItem(0);
+		}
+	}
+
+	// 第一种方法：设定指定任务task在指定时间time执行 schedule(TimerTask task, Date time)
+	public void timer() {
+		timer = new Timer();
+		timer.schedule(new TimerTask() {
+			public void run() {
+				System.out.println("----------------设定要指定任务------------------");
+				handler.sendEmptyMessage(10);
+			}
+		}, 4000);// 设定指定的时间time,此处为5000毫秒
+	}
+
+	// 下面滚动消息消失
+	public void timerruntextbottom() {
+		down_runwayTextView.setVisibility(0);
+		timer_run_bottom = new Timer();
+		timer_run_bottom.schedule(new TimerTask() {
+			public void run() {
+				handler.sendEmptyMessage(142);
+			}
+		}, 12000);// 设定指定的时间time,此处为6000毫秒
+	}
+
+	// 上面滚动消息消失
+	public void timerruntexttop() {
+		runwayTextView.setVisibility(0);
+		timer_run_top = new Timer();
+		timer_run_top.schedule(new TimerTask() {
+			public void run() {
+				handler.sendEmptyMessage(143);
+			}
+		}, 12000);// 设定指定的时间time,此处为6000毫秒
+	}
+
+	public static void timershuaping() {
+		timershuaping = new Timer();
+		timershuaping.schedule(new TimerTask() {
+			public void run() {
+				mhandler.sendEmptyMessage(1);
+			}
+		}, 3000);// 设定指定的时间time,此处为5000毫秒
+	}
+
+	private static Handler mhandler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 1:
+				shuaping = true;
+				timershuaping.cancel();
+				break;
+			default:
+				break;
+			}
+		};
+	};
+
+	/**
+	 * 获取禁言列表
+	 * 
+	 * @author Jon_V
+	 * 
+	 */
+	private void Get_Shut_Up_List() {
+		Runnable getshutuprun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.get_shut_up_list(
+							sharedPreferences.getString(APP.USER_ID, ""),
+							sharedPreferences.getString(APP.SECRET, ""),
+							room_id);
+					JSONObject obj = new JSONObject(result);
+					int state = obj.getInt("s");
+					if (state == 1) {
+						JSONArray data = obj.getJSONArray("data");
+						if (data.length() > 0) {
+							for (int i = 0; i < data.length(); i++) {
+								String item = (String) data.get(i);
+								String a = item.substring(0, item.indexOf("|"));
+								shut_up_list.add(a);
+							}
+							handler.sendEmptyMessage(11);
+						}
+					} else {
+						handler.sendEmptyMessage(12);
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					handler.sendEmptyMessage(12);
+				}
+
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(getshutuprun);
+	}
+
+	/**
+	 * 账号重复登录
+	 * 
+	 * @param msg
+	 */
+	private void repeatlogin_dialog(String text) {
+		final Dialog dialog_re = new AlertDialog.Builder(this).create();
+		dialog_re.show();
+		Window localWindow = dialog_re.getWindow();
+		localWindow.setContentView(LayoutInflater.from(this).inflate(
+				R.layout.repeatlogin_dialog, null));
+		Button releat_login_queding = (Button) localWindow
+				.findViewById(R.id.releat_login_queding);
+		TextView moneynotenoth_title = (TextView) localWindow
+				.findViewById(R.id.moneynotenoth_title);
+		moneynotenoth_title.setText(text);
+		releat_login_queding.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View paramAnonymousView) {
+				dialog_re.cancel();
+				LiveRoomActivity.this.finish();
+			}
+		});
+	}
+
+	/**
+	 * 对某某私聊
+	 * 
+	 */
+	public static void showprichat(final SiLiao siliao) {
+		final Dialog dialog_re = new AlertDialog.Builder(context).create();
+		Window window = dialog_re.getWindow();
+		window.setGravity(Gravity.CENTER);
+		window.setWindowAnimations(R.style.windowAnimstyle);
+		dialog_re.show();
+		Window localWindow = dialog_re.getWindow();
+		localWindow.setContentView(LayoutInflater.from(context).inflate(
+				R.layout.siliao_dialog, null));
+		TextView a_n = (TextView) localWindow.findViewById(R.id.a_n);
+		TextView s_btn = (TextView) localWindow.findViewById(R.id.s_btn);
+		a_n.setText(siliao.getName());
+		// 和某某某私聊
+		s_btn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				dialog_re.cancel();
+				if (sharedPreferences.getString(APP.IS_LOGIN, "")
+						.equals("true")) {
+					intpu_layout.setVisibility(8);
+					editmanager.showLiveInputView("1", siliao);
+					edit_listview = editmanager.getEditListView();
+					edit_listview.setAdapter(chatadapter);
+					// 私聊
+					pri_edit_list = editmanager.getPri_edit_list();
+					pri_edit_list.setAdapter(pri_chatadapter);
+				} else {
+					Utils.recharge(context);
+				}
+			}
+		});
+
+	}
+
+	/**
+	 * 让其不再保存Fragment的状态
+	 */
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		// super.onSaveInstanceState(outState);
+	}
+
+	/**
+	 * 滑动屏幕调节音量
+	 * 
+	 * @author Administrator
+	 * 
+	 */
+	private class MyGestureListener extends SimpleOnGestureListener {
+		@Override
+		public boolean onScroll(MotionEvent e1, MotionEvent e2,
+				float distanceX, float distanceY) {
+
+			if (e1 == null || e2 == null) {
+				return false;
+			}
+
+			float mOldX = e1.getX(), mOldY = e1.getY();
+			int y = (int) e2.getRawY();
+			Display disp = getWindowManager().getDefaultDisplay();
+			int windowWidth = disp.getWidth();
+			int windowHeight = disp.getHeight();
+			if (mOldY < (3 * windowWidth) / 4) {
+				onVolumeSlide((mOldY - y) / windowHeight);
+			}
+			return super.onScroll(e1, e2, distanceX, distanceY);
+		}
+	}
+
+	private void onVolumeSlide(float percent) {
+		if (mVolume == -1) {
+			mVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+			if (mVolume < 0) {
+				mVolume = 0;
+			}
+		}
+		int index = (int) (percent * mMaxVolume) + mVolume;
+		if (index > mMaxVolume) {
+			index = mMaxVolume;
+		} else if (index < 0) {
+			index = 0;
+		}
+		mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, index,
+				AudioManager.FLAG_PLAY_SOUND | AudioManager.FLAG_SHOW_UI);
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if (mGestureDetector.onTouchEvent(event)) {
+			return true;
+		}
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_UP:
+			endGesture();
+			break;
+		case MotionEvent.ACTION_DOWN:
+			if (button_is_show) {
+				video_more_button.setVisibility(0);
+				room_back.setVisibility(0);
+				button_is_show = false;
+			} else {
+				video_more_button.setVisibility(8);
+				room_back.setVisibility(8);
+				button_is_show = true;
+			}
+			break;
+		default:
+			break;
+		}
+		return super.onTouchEvent(event);
+	}
+
+	private void endGesture() {
+		mVolume = -1;
+	}
+
+	/**
+	 * 守护的详细信息
+	 * 
+	 * @param msg
+	 */
+	public static void shoushouhudialog(Guard guard) {
+		final Dialog shouhudialog = new AlertDialog.Builder(context).create();
+		shouhudialog.show();
+		Window localWindow = shouhudialog.getWindow();
+		localWindow.setContentView(LayoutInflater.from(context).inflate(
+				R.layout.shouhu_dialog_layout, null));
+		TextView shenyutianshu = (TextView) localWindow
+				.findViewById(R.id.shenyutianshu);
+		CircularImage guard_item_icon_tanchuang = (CircularImage) localWindow
+				.findViewById(R.id.guard_item_icon_tanchuang);
+		ImageView shouhu_user_caifu = (ImageView) localWindow
+				.findViewById(R.id.shouhu_user_caifu);
+		ImageView shouhu_user_shouhu = (ImageView) localWindow
+				.findViewById(R.id.shouhu_user_shouhu);
+		TextView shouhu_item_name = (TextView) localWindow
+				.findViewById(R.id.shouhu_item_name);
+		shenyutianshu.setText("还有" + guard.getDays_remain() + "天到期");
+		shouhu_item_name.setText(guard.getNickname());
+		// 设置财富等级图片
+		APP.setCost_level(guard.getCost_level(), shouhu_user_caifu, context);
+		// 设置守护等级
+		String str = APP.USER_BIG_LOGO_ROOT + guard.getIcon();
+		mImageLoader.displayImage(str, guard_item_icon_tanchuang, mOptions);
+		if ("1".equals(guard.getIs_year())) {
+			// 年守护
+			if ("1".equals(guard.getType())) {
+				// 银守护
+				shouhu_user_shouhu.setImageResource(APP
+						.parseIsYearSilverGuardId(guard.getLevel()));
+				;
+			} else {
+				// 金守护
+				shouhu_user_shouhu.setImageResource(APP
+						.parseIsYearGoldGuardId(guard.getLevel()));
+			}
+		} else {
+			// 年守护
+			if ("1".equals(guard.getType())) {
+				// 银守护
+				shouhu_user_shouhu.setImageResource(APP
+						.parseIsYearSilverGuardId(guard.getLevel()));
+			} else {
+				// 金守护
+				shouhu_user_shouhu.setImageResource(APP
+						.parseIsYearGoldGuardId(guard.getLevel()));
+			}
+		}
+	}
+
+	public static void RushDataSet(int position) {
+		giftmessages.remove(position);
+		chatGiftAdapter.notifyDataSetChanged();
+	}
+
+	private void GetShouhu() {
+		Runnable getguardandviprun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String user_id = sharedPreferences.getString(APP.USER_ID,
+							"");
+					String secret = sharedPreferences.getString(APP.SECRET, "");
+					String result = Utils.getvipandguard(user_id, secret,
+							anchor_id, room_id);
+					JSONObject obj = new JSONObject(result);
+					int s = obj.getInt("s");
+					if (s == 1) {
+						JSONObject data = obj.getJSONObject("data");
+						// 判断是否是守护
+						if (data.has("guard")) {
+							JSONObject userinfo = data
+									.getJSONObject("userinfo");
+							JSONObject guard = data.getJSONObject("guard");
+							// guard_expire = guard.getString("expire");
+							// exp = guard.getString("exp");
+							// max_exp = guard.getString("max_exp");
+							g_lv = guard.getString("lv");
+							g_type = guard.getString("type");
+							// guard_lv = guard.getString("lv");
+							// type = guard.getString("type");
+						} else {
+						}
+					} else {
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(getguardandviprun);
+	}
+
+	/**
+	 * 注销登录
+	 */
+	private void loginOut() {
+		Runnable outloginrun = new Runnable() {
+			public void run() {
+				String s = Utils.outlogin();
+				try {
+					JSONObject jsonObject = new JSONObject(s);
+					int i = jsonObject.getInt("s");
+					if (i == 1) {
+						JSONObject data = jsonObject.getJSONObject("data");
+						String id = data.getString("id");
+						String secret = jsonObject.getString("secret");
+						String nickname = data.getString("nickname");
+						String icon = data.getString("icon");
+						JSONObject auth = jsonObject.getJSONObject("auth");
+						String timestamp = auth.getString("timestamp");
+						String openkey = auth.getString("openkey");
+						SharedPreferences preferences = getSharedPreferences(
+								APP.MY_SP, Context.MODE_PRIVATE);
+						Editor editor = preferences.edit();
+						editor.putString(APP.IS_LOGIN, "false");
+						editor.putString(APP.USER_ID, id);
+						editor.putString(APP.USER_ICON, icon);
+						editor.putString(APP.SECRET, secret);
+						editor.putString(APP.TIMESTAMP, timestamp);
+						editor.putString(APP.OPENKEY, openkey);
+						editor.putString(APP.NICKNAME, nickname);
+						editor.commit();
+					} else {
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(outloginrun);
+	}
+
+	private void tequanliwu(String text) {
+		final Dialog dialog_re = new AlertDialog.Builder(context).create();
+		dialog_re.show();
+		Window localWindow = dialog_re.getWindow();
+		localWindow.setContentView(LayoutInflater.from(context).inflate(
+				R.layout.repeatlogin_dialog, null));
+		Button releat_login_queding = (Button) localWindow
+				.findViewById(R.id.releat_login_queding);
+		TextView moneynotenoth_title = (TextView) localWindow
+				.findViewById(R.id.moneynotenoth_title);
+		moneynotenoth_title.setText(text);
+		releat_login_queding.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View paramAnonymousView) {
+				dialog_re.cancel();
+			}
+		});
+	}
+
+	boolean mMommonShow;
+
+	@SuppressLint("NewApi")
+	public void showMommonView(boolean flag) {
+		if (mPlaceFragment == null) {
+			return;
+		}
+
+		if (flag) {
+			if (!mMommonShow) {
+				isMommonStart = true;
+				mMommonShow = true;
+				getFragmentManager().beginTransaction()
+						.add(R.id.liveroomview, mPlaceFragment).commit();
+
+			}
+		} else {
+			if (mMommonShow) {
+				mMommonShow = false;
+				// mPlaceFragment.doFinishTime();
+				getFragmentManager().beginTransaction().remove(mPlaceFragment)
+						.commit();
+			}
+
+		}
+	}
+
+	@SuppressLint("NewApi")
+	public void showMommonCountView(boolean flag) {
+		if (mMommonCountFragment == null) {
+			return;
+		}
+		if (flag) {
+			getFragmentManager().beginTransaction()
+					.add(R.id.liveroomview, mMommonCountFragment).commit();
+		} else {
+			getFragmentManager().beginTransaction()
+					.remove(mMommonCountFragment).commit();
+		}
+
+	}
+
+	private Handler mommomHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case HANDLE_MOMMOM_CONNECT: {
+				ActivityMsg activityMsg = (ActivityMsg) msg.obj;
+
+				if (activityMsg.getTid() == S_GET_MOMMON_CNNECT) {
+					if (mPlaceFragment == null) {
+						mPlaceFragment = new MommonManageFragment(
+								LiveRoomActivity.this);
+					}
+					if (mMommonCountFragment == null) {
+						mMommonCountFragment = new MommonCountFragment(
+								LiveRoomActivity.this);
+					}
+
+				} else if (activityMsg.getTid() == S_GET_MOMMON_START) {
+					showMommonView(true);
+				} else if (activityMsg.getTid() == S_GET_MOMMON_CLICK) {
+					String msgBody = activityMsg.getMsg();
+					JSONObject object;
+					try {
+						object = new JSONObject(msgBody);
+						int money = object.getInt("money");
+						int id = object.getInt("id");
+						if (money == -1) {
+							money = 0;
+						}
+						mPlaceFragment.showAddMOney(money, id);
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+				} else if (activityMsg.getTid() == S_GET_MOMMON_OVER) {
+					String msgBody = activityMsg.getMsg();
+					JSONObject object;
+					try {
+						object = new JSONObject(msgBody);
+						int money = object.getInt("money");
+
+						String beans = sharedPreferences.getString(APP.BEANS,
+								"");
+
+						// if(money<0){
+						// money = 0 ;
+						// }
+
+						Editor editor = sharedPreferences.edit();
+						editor.putString(APP.BEANS, money + "");
+						editor.commit();
+						if (mPlaceFragment != null) {
+							mMommonCountFragment
+									.setCurMoney(mPlaceFragment.curCash);
+							mPlaceFragment.doGameOver();
+							showMommonView(false);
+							showMommonCountView(true);
+						} else {
+							Log.i("sjf", "果然出现了");
+						}
+
+						isMommonStart = false;
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					if (mommonclient != null) {
+						mommonclient.disconnect();
+						mommonclient = null;
+					}
+				}
+
+			}
+				break;
+
+			}
+		}
+	};
+
+	// 连接财神服务器
+	public void SocketMommonStart() {
+		Runnable socketstartrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					// 连接socket服务器
+					if (mommonclient != null) {
+						mommonclient.disconnect();
+						mommonclient = null;
+					}
+					mommonclient = new BaseClient();
+					// mommonclient.start(mMommonUrl, mMommonPort,
+					// mommomHandler);
+					mommonclient.start(mMommonUrl, mMommonPort, mommomHandler,
+							HANDLE_MOMMOM_CONNECT,
+							HandlerCmd.HandlerCmd_RoomMommonClientException);
+					// mommonclient.start("192.168.1.102", 5588, mommomHandler);
+					JsonObject data = new JsonObject();
+					data.addProperty("userid", openid);
+					data.addProperty("roomid", room_id);
+					data.addProperty("timestamp", timestamp + "");
+					data.addProperty("openkey", openkey);
+					data.addProperty("clienttype", 1);
+					String message = data.toString();
+					byte[] request = Utils.getBytes(message, C_MOMMON_CNNECT);
+					mommonclient.sendmsg(request);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(socketstartrun);
+	}
+
+	// 连接财神服务器
+	public void SocketMommonClickMoney(final int id) {
+		Runnable socketClick = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					// 连接socket服务器
+					if (mommonclient != null) {
+						JsonObject data = new JsonObject();
+						data.addProperty("type", 1);
+						data.addProperty("id", id);
+						data.addProperty("roomid", room_id);
+						String message = data.toString();
+						byte[] request = Utils
+								.getBytes(message, C_MOMMON_CLICK);
+						mommonclient.sendmsg(request);
+					}
+					// ThreadPoolWrap.getThreadPool().removeTask(this);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(socketClick);
+	}
+
+	private void yurenjiezhongjiang(String text, int nn) {
+		final Dialog dialog_re1 = new AlertDialog.Builder(context).create();
+		dialog_re1.show();
+		Window localWindow = dialog_re1.getWindow();
+		localWindow.setContentView(LayoutInflater.from(context).inflate(
+				R.layout.yurenjie_dialog, null));
+		ImageView yrj_close = (ImageView) localWindow
+				.findViewById(R.id.yrj_close);
+		TextView yrj_content = (TextView) localWindow
+				.findViewById(R.id.yrj_content);
+		ImageView yrj_img = (ImageView) localWindow.findViewById(R.id.yrj_img);
+
+		yrj_content.setText(text);
+		yrj_close.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				dialog_re1.cancel();
+			}
+		});
+		switch (nn) {
+		case 0:
+			yrj_img.setImageResource(R.drawable.yr_yaoshi);
+			break;
+		case 1:
+			yrj_img.setImageResource(R.drawable.yr_huizhang);
+			break;
+		case 2:
+			yrj_img.setImageResource(R.drawable.yr_lyc);
+			break;
+		case 3:
+			yrj_img.setImageResource(R.drawable.yr_ql);
+			break;
+		case 4:
+			yrj_img.setImageResource(R.drawable.yr_libao);
+			break;
+
+		default:
+			break;
+		}
+
+	}
+
+}

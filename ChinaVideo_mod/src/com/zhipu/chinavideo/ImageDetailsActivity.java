@@ -1,0 +1,346 @@
+package com.zhipu.chinavideo;
+
+import java.io.File;
+
+import org.json.JSONObject;
+
+import com.zhipu.chinavideo.adapter.PhotoWallAdapter;
+import com.zhipu.chinavideo.db.GlobalData;
+import com.zhipu.chinavideo.entity.OnePhoto;
+import com.zhipu.chinavideo.fragment.ZoomImageView;
+import com.zhipu.chinavideo.rpc.RpcEvent;
+import com.zhipu.chinavideo.util.APP;
+import com.zhipu.chinavideo.util.MyPhotoPageView;
+import com.zhipu.chinavideo.util.ThreadPoolWrap;
+import com.zhipu.chinavideo.util.Utils;
+
+import ctv.sdk.Config;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+
+/**
+ * 查看大图的Activity界面。
+ * 
+ * @author sjf
+ */
+public class ImageDetailsActivity extends Activity implements OnPageChangeListener, OnClickListener {
+
+	/**
+	 * 用于管理图片的滑动
+	 */
+	private MyPhotoPageView viewPager;
+
+	/**
+	 * 显示当前图片的页数
+	 */
+	private TextView pageText;
+	boolean isMine;
+	public Context context;
+
+	private ImageView m_imageView_like;// 点赞按钮
+
+	private TextView m_textView_likeCount;// 点赞数量
+
+	private OnePhoto curPhoto;
+	private String m_anchorid;
+	private GlobalData gd;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		context = this;
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.image_details);
+		gd = GlobalData.getInstance(ImageDetailsActivity.this);
+		int imagePosition = getIntent().getIntExtra("image_position", 0);
+		m_anchorid = getIntent().getStringExtra("anchorID");
+		isMine = getIntent().getBooleanExtra("isMine", false);
+
+		pageText = (TextView)findViewById(R.id.tv_showphotocount);
+		viewPager = (MyPhotoPageView)findViewById(R.id.view_pager);
+		ViewPagerAdapter adapter = new ViewPagerAdapter();
+		viewPager.setAdapter(adapter);
+		viewPager.setCurrentItem(imagePosition);
+		viewPager.setOnPageChangeListener(this);
+
+		viewPager.setEnabled(false);
+		viewPager.setNeedCheck(isMine);
+
+		ImageView back = (ImageView)findViewById(R.id.title_back);
+		back.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				finish();
+			}
+		});
+
+		// 点赞
+		m_imageView_like = (ImageView)findViewById(R.id.imageView_photo_like);
+		m_textView_likeCount = (TextView)findViewById(R.id.tv_showlike);
+		m_imageView_like.setOnClickListener(this);
+		// 设定当前的页数和总页数
+		showCurPage(imagePosition);
+
+	}
+
+	/**
+	 * ViewPager的适配器
+	 * 
+	 * @author sunjinfang
+	 */
+	class ViewPagerAdapter extends PagerAdapter {
+
+		@Override
+		public Object instantiateItem(ViewGroup container, int position) {
+
+			Bitmap bitmap = null;
+			File fbitmap = gd.getmImageLoader().getDiskCache()
+					.get(gd.mPhotoAblumImgPath.elementAt(position).url);
+			if (fbitmap.exists()) {
+				// 第一次解析将inJustDecodeBounds设置为true，来获取图片大小
+				final BitmapFactory.Options options = new BitmapFactory.Options();
+				options.inJustDecodeBounds = true;
+				// BitmapFactory.decodeFile(fbitmap.getPath(), options);
+				// 调用上面定义的方法计算inSampleSize值
+				// options.inSampleSize = calculateInSampleSize(options, 4);
+				// 使用获取到的inSampleSize值再次解析图片
+				options.inJustDecodeBounds = false;
+				bitmap = BitmapFactory.decodeFile(fbitmap.getPath(), options);
+			}
+			if (bitmap == null) {
+				bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.empty_photo);
+			}
+			View view = LayoutInflater.from(ImageDetailsActivity.this).inflate(
+					R.layout.zoom_image_layout, null);
+			ZoomImageView zoomImageView = (ZoomImageView)view.findViewById(R.id.zoom_image_view);
+
+			zoomImageView.setImageBitmap(bitmap);
+			zoomImageView.setAct(ImageDetailsActivity.this);
+			container.addView(view);
+			return view;
+		}
+
+		@Override
+		public int getCount() {
+
+			if (isMine) {
+				return gd.mPhotoAblumImgPath.size();
+			}
+			else {
+				return gd.mPhotoAblumImgPath.size();
+			}
+
+		}
+
+		@Override
+		public boolean isViewFromObject(View arg0, Object arg1) {
+			return arg0 == arg1;
+		}
+
+		@Override
+		public void destroyItem(ViewGroup container, int position, Object object) {
+			View view = (View)object;
+			container.removeView(view);
+		}
+
+	}
+
+	// 左右滑动
+	private boolean left = false;
+	private boolean right = false;
+	private boolean isScrolling = false;
+	private int lastValue = -1;
+
+	@Override
+	public void onPageScrollStateChanged(int arg0) {
+		if (arg0 == 1) {
+			isScrolling = true;
+		}
+		else {
+			isScrolling = false;
+		}
+	}
+
+	@Override
+	public void onPageScrolled(int arg0, float arg1, int arg2) {
+
+		if (isScrolling) {
+			if (lastValue > arg2) {
+				// 递减，向右侧滑动
+				right = true;
+				left = false;
+			}
+			else if (lastValue < arg2) {
+				// 递减，向右侧滑动
+				right = false;
+				left = true;
+			}
+			else if (lastValue == arg2) {
+				right = left = false;
+			}
+
+			viewPager.setRight(right);
+			viewPager.setLeft(left);
+		}
+
+		lastValue = arg2;
+	}
+
+	@Override
+	public void onPageSelected(int currentPage) {
+		// 每当页数发生改变时重新设定一遍当前的页数和总页数
+
+		showCurPage(currentPage);
+	}
+
+	private void showCurPage(int page) {
+		if (isMine) {
+			pageText.setText((page) + "/" + (gd.mPhotoAblumImgPath.size() - 1));
+			viewPager.setCurPage(page);
+		}
+		else {
+			pageText.setText((page + 1) + "/" + (gd.mPhotoAblumImgPath.size()));
+			viewPager.setCurPage(page + 1);
+		}
+
+		curPhoto = gd.mPhotoAblumImgPath.elementAt(page);
+		updateLike(curPhoto);
+	}
+
+	public void doFinish() {
+		this.finish();
+	}
+
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+			case R.id.imageView_photo_like:
+				doLikePhot();
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	private void updateLike(OnePhoto photo) {
+		if (photo != null) {
+			if (photo.isLike) {
+				m_imageView_like.setImageResource(R.drawable.img_photo_dianzan_select);
+			}
+			else {
+				m_imageView_like.setImageResource(R.drawable.img_photo_dianzan_normal);
+			}
+			m_textView_likeCount.setText(photo.likeCount + "");
+		}
+	}
+
+	private static final int M_Handler_DoLikeSuccess = 1;
+	private static final int M_Handler_DoLikeFailed = 2;
+	Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+				case M_Handler_DoLikeSuccess:
+
+					OnePhoto photo = (OnePhoto)msg.obj;
+					if (photo.isLike) {
+						photo.isLike = false;
+						photo.likeCount--;
+					}
+					else {
+						photo.isLike = true;
+						photo.likeCount++;
+					}
+					updateLike(photo);
+					break;
+				case M_Handler_DoLikeFailed:
+
+					break;
+
+				default:
+					break;
+			}
+		}
+
+	};
+
+	private void doLikePhot() {
+		if(!GlobalData.getInstance(context).checkLogin()){
+			if (Config.Use_3rd_LogIn) {
+//				GameBilling.getInstance().Login(mContext, handler);
+			} else {
+				Intent intent = new Intent(context, LoginActivity.class);
+				context.startActivity(intent);
+			}
+			return ;
+		}
+		if (curPhoto != null) {
+			if (curPhoto.isLike) {
+				return;
+			}
+
+			Runnable runnable = new Runnable() {
+				public void run() {
+					try {
+						String reslut = Utils.addRpcEvent(RpcEvent.CallLikePhoto, gd
+								.getSharedPreferences().getString(APP.USER_ID, ""), gd
+								.getSharedPreferences().getString(APP.SECRET, ""), m_anchorid,
+								curPhoto.id);
+						JSONObject obj = new JSONObject(reslut);
+
+						int s = obj.getInt("s");
+
+						if (s == 1) {
+							Message msg = new Message();
+							msg.obj = curPhoto;
+							msg.what = M_Handler_DoLikeSuccess;
+							handler.sendMessage(msg);
+						}
+						else {
+							handler.sendEmptyMessage(M_Handler_DoLikeFailed);
+						}
+
+					}
+					catch (Exception e) {
+						e.printStackTrace();
+						handler.sendEmptyMessage(M_Handler_DoLikeFailed);
+					}
+					ThreadPoolWrap.getThreadPool().removeTask(this);
+				}
+			};
+			ThreadPoolWrap.getThreadPool().executeTask(runnable);
+
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		setContentView(R.layout.activity_null);
+	}
+
+}

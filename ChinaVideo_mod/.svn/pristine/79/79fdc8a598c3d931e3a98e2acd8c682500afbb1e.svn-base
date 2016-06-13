@@ -1,0 +1,367 @@
+package com.zhipu.chinavideo;
+
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.nostra13.universalimageloader.cache.memory.impl.WeakMemoryCache;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.tencent.android.tpush.XGPushClickedResult;
+import com.tencent.android.tpush.XGPushConfig;
+import com.tencent.android.tpush.XGPushManager;
+import com.umeng.analytics.MobclickAgent;
+import com.zhipu.chinavideo.db.GlobalData;
+import com.zhipu.chinavideo.fragment.MommonView;
+import com.zhipu.chinavideo.manager.SoundManager;
+import com.zhipu.chinavideo.util.APP;
+import com.zhipu.chinavideo.util.ThreadPoolWrap;
+import com.zhipu.chinavideo.util.Utils;
+import com.zhipu.chinavideo.util.dConfig;
+
+import ctv.sdk.GameBilling;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.widget.ImageView;
+
+public class SplashActivity extends Activity {
+	private DisplayMetrics dm;
+	private int screenWidth;
+	private int screenHeight;
+	public ImageLoader mImageLoader = null;
+	public DisplayImageOptions mOptions;
+	private String url = "http://static.0058.com/static/img/app/mstart/android720.jpg";
+	private ImageView zi1, zi2, zi3, zi4, zi5, zi6, zi7, zi8;
+	boolean isFirstIn = false;
+	private static final int GO_HOME = 1000;
+	private String room_id = "888888";
+	private String type = "0";
+	Timer timer;
+	int i = 0;
+	private ImageView qd_bg;
+	AlphaAnimation anima1, anima2, anima3, anima4, anima5, anima6, anima7,
+			anima8, animalalalllla;
+	private SharedPreferences sharedPreferences;
+	
+	private Context mContext ;
+	
+	// TranslateAnimation animation;
+	
+	// 延迟3秒
+	private static final String SHAREDPREFERENCES_NAME = "first_pref";
+	/**
+	 * Handler:跳转到不同界面
+	 */
+	private Handler mHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case GO_HOME:
+				goHome();
+				break;
+			case 5:
+				if (i == 1) {
+					zi1.startAnimation(anima1);
+				} else if (i == 2) {
+					zi2.startAnimation(anima2);
+				} else if (i == 3) {
+					zi3.startAnimation(anima3);
+				} else if (i == 4) {
+					zi4.startAnimation(anima4);
+				} else if (i == 5) {
+					zi5.startAnimation(anima5);
+				} else if (i == 6) {
+					zi6.startAnimation(anima6);
+				} else if (i == 7) {
+					zi7.startAnimation(anima7);
+				} else if (i == 8) {
+					zi8.startAnimation(anima8);
+				} else if (i == 15) {
+					if (timer != null) {
+						Log.i("lvjian", "==============销毁了==============");
+						timer.cancel();
+					}
+
+					mHandler.sendEmptyMessage(6);
+
+				}
+				break;
+			case 6:
+				qd_bg.startAnimation(animalalalllla);
+				qd_bg.setVisibility(0);
+				animalalalllla.setAnimationListener(new AnimationListener() {
+
+					@Override
+					public void onAnimationStart(Animation arg0) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation arg0) {
+						// TODO Auto-generated method stub
+					}
+
+					@Override
+					public void onAnimationEnd(Animation arg0) {
+						// TODO Auto-generated method stub
+						mHandler.sendEmptyMessage(GO_HOME);
+					}
+				});
+
+				break;
+			case 7:
+				ImageLoaderConfiguration localImageLoaderConfiguration = new ImageLoaderConfiguration.Builder(
+						SplashActivity.this).threadPoolSize(1)
+						.memoryCache(new WeakMemoryCache()).build();
+				mImageLoader = ImageLoader.getInstance();
+				mImageLoader.init(localImageLoaderConfiguration);
+				mOptions = new DisplayImageOptions.Builder()
+						.bitmapConfig(Bitmap.Config.RGB_565)
+						.showStubImage(R.drawable.qd_bg_pic)
+						.showImageForEmptyUri(R.drawable.qd_bg_pic)
+						.showImageOnFail(R.drawable.qd_bg_pic)
+						.showImageOnLoading(R.drawable.qd_bg_pic).cacheOnDisc()
+						.imageScaleType(ImageScaleType.IN_SAMPLE_INT).build();
+				mImageLoader.displayImage(url, qd_bg, mOptions);
+				break;
+
+			}
+			super.handleMessage(msg);
+		}
+	};
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.splash);
+		mContext = this ;
+		GlobalData.getInstance(SplashActivity.this).clearDemoData();
+		APP.init();
+		// MobclickAgent.setDebugMode( true );
+		Context context = getApplicationContext();
+		XGPushManager.registerPush(context);
+		sharedPreferences = getSharedPreferences(APP.MY_SP,
+				Context.MODE_PRIVATE);
+		if (!Utils.isEmpty(XGPushConfig.getToken(this))) {
+			Editor editor = sharedPreferences.edit();
+			editor.putString(APP.DEVICETOKEN, XGPushConfig.getToken(this));
+			editor.commit();
+		}
+		getScreenWH();
+		geturl();
+		zi1 = (ImageView) findViewById(R.id.z_1);
+		zi2 = (ImageView) findViewById(R.id.z_2);
+		zi3 = (ImageView) findViewById(R.id.z_3);
+		zi4 = (ImageView) findViewById(R.id.z_4);
+		zi5 = (ImageView) findViewById(R.id.z_5);
+		zi6 = (ImageView) findViewById(R.id.z_6);
+		zi7 = (ImageView) findViewById(R.id.z_7);
+		zi8 = (ImageView) findViewById(R.id.z_8);
+		qd_bg = (ImageView) findViewById(R.id.qd_bg);
+
+		init();
+		SoundManager.getIntance().initAllSound(this);
+		dConfig.initScale(screenWidth, screenHeight);
+		GameBilling.getInstance().init(this);
+		
+		
+		
+		
+		
+		/**
+		 * 如果是从网页跳转过来的  接收房间消息，跳转到主播房间
+		 */
+//		Intent intent = getIntent();  
+//        String scheme = intent.getScheme();  
+//        Uri uri = intent.getData();  
+//        System.out.println("scheme:"+scheme);  
+//        if (uri != null) {  
+//            String host = uri.getHost();  
+//            String dataString = intent.getDataString();  
+//            String id = uri.getQueryParameter("roomid");  
+//          
+//            room_id = id ;
+//            if(!"".equals(room_id)){
+//                GlobalData.getInstance(mContext).mUseUrlJump =  true ;
+//                GlobalData.getInstance(context).mCurRoomIdFormAnchorCenter = room_id ;
+//                Log.i("sjf", "roomid == "+id) ;
+//               
+//                Intent in = new Intent(this, LiveRoomActivity.class);
+//    			in.putExtra("room_id", room_id);
+//    			this.startActivity(in);
+//    			this.finish();
+//            }
+//            
+//        }  
+		
+		
+		
+	}
+
+	private void init() {
+	
+		anima1 = new AlphaAnimation(1.0f, 1.0f);
+		anima2 = new AlphaAnimation(1.0f, 1.0f);
+		anima3 = new AlphaAnimation(1.0f, 1.0f);
+		anima4 = new AlphaAnimation(1.0f, 1.0f);
+		anima5 = new AlphaAnimation(1.0f, 1.0f);
+		anima6 = new AlphaAnimation(1.0f, 1.0f);
+		anima7 = new AlphaAnimation(1.0f, 1.0f);
+		anima8 = new AlphaAnimation(1.0f, 1.0f);
+		animalalalllla = new AlphaAnimation(0.0f, 1.0f);
+		SharedPreferences preferences = getSharedPreferences(
+				SHAREDPREFERENCES_NAME, MODE_PRIVATE);
+		// 取得相应的值，如果没有该值，说明还未写入，用true作为默认值
+		isFirstIn = preferences.getBoolean("isFirstIn", true);
+		
+		int time = 500 ;
+		anima1.setDuration(time);
+		anima2.setDuration(time);
+		anima3.setDuration(time);
+		anima4.setDuration(time);
+		anima5.setDuration(time);
+		anima6.setDuration(time);
+		anima7.setDuration(time);
+		anima8.setDuration(time);
+		animalalalllla.setDuration(time);
+		anima1.setFillAfter(true);
+		anima2.setFillAfter(true);
+		anima3.setFillAfter(true);
+		anima4.setFillAfter(true);
+		anima5.setFillAfter(true);
+		anima6.setFillAfter(true);
+		anima7.setFillAfter(true);
+		anima8.setFillAfter(true);
+		animalalalllla.setFillAfter(true);
+		startRun();
+	}
+
+	private void goHome() {
+
+
+
+		Intent intent = new Intent(SplashActivity.this, MainTabActivity.class);
+		intent.putExtra("type", type);
+		intent.putExtra("room_id", room_id);
+		SplashActivity.this.startActivity(intent);
+
+		SplashActivity.this.finish();
+	}
+
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		/**
+		 * 获取推送发送过来的参数
+		 */
+		XGPushClickedResult click = XGPushManager.onActivityStarted(this);
+		if (click != null) {
+			String customContent = click.getCustomContent();
+			if (customContent != null && customContent.length() != 0) {
+				try {
+					JSONObject json = new JSONObject(customContent);
+					Log.i("lvjian", "json------------------>" + json.toString());
+					type = json.getString("type");
+					if (!json.isNull("room_id")) {
+						room_id = json.getString("room_id");
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void startRun() {
+		
+		 new CountDownTimer(1500, 1500) {
+			@Override
+			public void onFinish() {
+				mHandler.sendEmptyMessage(6);
+			}
+
+			@Override
+			public void onTick(long arg0) {
+				// 每1000毫秒回调的方法
+			}
+
+		}.start();
+		
+		
+		
+	}
+
+	/**
+	 * 友盟统计
+	 */
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		MobclickAgent.onResume(this);
+	}
+
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		MobclickAgent.onPause(this);
+	}
+
+	/**
+	 * 获取实际屏幕的宽高
+	 */
+	public void getScreenWH() {
+		dm = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		screenWidth = dm.widthPixels;
+		screenHeight = dm.heightPixels;
+	}
+	
+
+	/**
+	 * 获取首页 广告图片地址
+	 */
+	private void geturl() {
+		Runnable geturlrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.getImageUrl();
+					Log.i("lvjian", "首页广告地址----》" + result);
+					JSONObject obj = new JSONObject(result);
+					url = obj.getString("img");
+					mHandler.sendEmptyMessage(7);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					mHandler.sendEmptyMessage(7);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(geturlrun);
+	}
+
+}

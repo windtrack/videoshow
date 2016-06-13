@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="fill_parent"
+    android:background="@drawable/shop_noble_host_pop"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="5.0dip" >
+
+        <TextView
+            android:text="领取首充礼物！"
+            android:layout_marginTop="10dp"
+            android:id="@+id/dia_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <TextView
+         android:layout_margin="10dp"
+            android:id="@+id/shouchongmsg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50元>首次充值>=10元，立即获得价值350元超值豪华礼包。首次充值≥50元，立即获得价值1000元超值豪华礼包。"
+            android:textColor="@color/black"
+            android:textSize="14.0sp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="1.0px"
+        android:background="#ffcccccc" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/shouchong_b1"
+            android:layout_width="0.0dip"
+            android:layout_height="48.0dip"
+            android:layout_weight="1.0"
+            android:background="@null"
+            android:text="50>首充>=10"
+            android:textColor="@color/title_bg" />
+
+        <View
+            android:layout_width="1.0px"
+            android:layout_height="fill_parent"
+            android:background="#ffcccccc" />
+
+        <Button
+            android:id="@+id/shouchong_b2"
+            android:layout_width="0.0dip"
+            android:layout_height="48.0dip"
+            android:layout_weight="1.0"
+            android:background="@null"
+            android:text="首充>=50"
+            android:textColor="@color/title_bg" />
+    </LinearLayout>
+
+</LinearLayout>

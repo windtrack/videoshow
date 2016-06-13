@@ -1,0 +1,42 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="@drawable/title_bg_pic" >
+
+    <ImageView
+        android:id="@+id/title_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="5dp"
+        android:padding="6dp"
+        android:src="@drawable/title_back" />
+
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:text="我的相册"
+         />
+
+    <TextView
+        android:id="@+id/title_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/title_text"
+        android:layout_alignBottom="@+id/title_text"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:textSize="18sp"
+         android:textColor="@android:color/white"
+        android:text="选择"
+        />
+
+
+
+</RelativeLayout>

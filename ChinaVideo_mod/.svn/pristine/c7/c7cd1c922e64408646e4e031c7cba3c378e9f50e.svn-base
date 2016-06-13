@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/task_show_tips"
+    android:gravity="center"
+
+ >
+
+    <ListView
+        android:layout_marginTop="3dp"
+        android:id="@+id/gift_num_listView"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:divider="#ff4a4a4a"
+        android:dividerHeight="1px"
+        android:fadeScrollbars="true"
+        android:fadingEdge="none" >
+    </ListView>
+
+</LinearLayout>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:background="@drawable/shop_noble_host_pop"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_shouchongup" >
+	<Button
+	    android:layout_marginRight="8dp"
+	    	android:layout_centerVertical="true"
+            android:id="@+id/buttonclose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/button_shouchong_close" />
+
+        <TextView
+            android:id="@+id/shouchongTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="恭喜您!"
+            android:textColor="@color/white"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+        
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/text_shouchongtips"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
+        android:layout_marginTop="15dp"
+        android:lineSpacingMultiplier="1.5"
+        android:text="确认清除缓存吗\n确认清除缓存吗\n确认清除缓存吗\n确认清除缓存吗\n确认清除缓存吗\n确认清除缓存吗\n"
+        android:textColor="#f53505"
+        android:textSize="16.0sp" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_horizontal" >
+
+        <Button
+            android:textSize="18sp"
+            android:id="@+id/bt_shouchongsussessSure"
+            android:layout_width="wrap_content"
+            android:layout_height="40.0dip"
+            android:background="@drawable/shape_shouchong_down"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:text="确定"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+</LinearLayout>

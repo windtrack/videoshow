@@ -1,0 +1,117 @@
+package com.zhipu.chinavideo.manager;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import android.content.Context;
+import android.text.SpannableStringBuilder;
+import android.util.Log;
+
+import java.util.List;
+import java.util.Queue;
+
+import com.zhipu.chinavideo.entity.ChatMessage;
+import com.zhipu.chinavideo.util.RunTextView;
+import com.zhipu.chinavideo.util.SmilyParse;
+
+public class RunwayManager {
+	public static RunwayManager instance = null;
+	private Context context = null;
+	private Lock queueLock = null;
+	private Queue<ChatMessage> runwayQueue = null;
+	private RunTextView sTextView = null;
+	private ChatMessage tempMesage = null;
+	private List<String> gifs;
+//	private SmilyParse smilyparse;
+	private RunwayManager() {
+		runwayQueue = null;
+		queueLock = null;
+		sTextView = null;
+		context = null;
+		tempMesage = null;
+		runwayQueue = new ArrayBlockingQueue(1);
+		queueLock = new ReentrantLock();
+	}
+
+	private void add(ChatMessage paramChatMessage) {
+		this.queueLock.lock();
+		if (this.runwayQueue != null) {
+			if (!this.runwayQueue.offer(paramChatMessage)) {
+				this.runwayQueue.poll();
+				this.runwayQueue.offer(paramChatMessage);
+			}
+			this.queueLock.unlock();
+		}
+	}
+
+	private void display(SpannableStringBuilder paramSpannableStringBuilder) {
+		this.sTextView.setVisibility(0);
+		this.sTextView.setText("");
+		this.sTextView.pauseScroll();
+		this.sTextView.append(paramSpannableStringBuilder);
+		this.sTextView.setDuration(10000 * this.runwayQueue.size());
+		this.sTextView.startScroll();
+	}
+
+	public static RunwayManager getInstance() {
+		if (instance == null)
+			instance = new RunwayManager();
+		return instance;
+	}
+
+	public static void release() {
+		if (instance != null)
+			instance = null;
+	}
+
+	public void handleMessage(ChatMessage paramChatMessage) {
+		if (paramChatMessage != null) {
+			add(paramChatMessage);
+			this.sTextView.pauseScroll();
+			this.sTextView.setDuration(2000);
+			this.sTextView.resumeScroll();
+		}
+	}
+
+	public void hide() {
+
+	}
+
+	public void init(RunTextView paramRunTextView, Context paramContext) {
+		this.sTextView = paramRunTextView;
+		this.context = paramContext;
+//		smilyparse=	 new SmilyParse(paramContext);
+		this.sTextView.init(new RunTextView.OnCompleteListener() {
+			public void onComplete() {
+				RunwayManager.this.show();
+			}
+		});
+	}
+
+	public void show() {
+		this.queueLock.lock();
+		SpannableStringBuilder localSpannableStringBuilder = new SpannableStringBuilder(
+				"");
+		for (int i = 0; i < this.runwayQueue.size(); i++) {
+			final ChatMessage localChatMessage;
+			localChatMessage = (ChatMessage) this.runwayQueue.poll();// 从队列中取出message
+			if (localChatMessage == null) {
+				break;
+			}
+			if ((this.tempMesage == localChatMessage) && (i != 0))
+				break;
+			this.tempMesage = localChatMessage;
+			this.runwayQueue.offer(localChatMessage);// 加入message
+			String s = localChatMessage.getSay();
+//			String s = localChatMessage.getSname() + "说："
+//					+ localChatMessage.getContent() + "(来自"
+//					+ localChatMessage.getTname() + ")";
+//			CharSequence charSequence = smilyparse.compileStringToDisply(s);
+			localSpannableStringBuilder = new SpannableStringBuilder(s);
+		}
+		this.queueLock.unlock();
+		display(localSpannableStringBuilder);
+		return;
+	}
+}

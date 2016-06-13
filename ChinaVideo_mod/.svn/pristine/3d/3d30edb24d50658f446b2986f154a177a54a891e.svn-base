@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/white"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/title_bg" >
+
+        <ImageView
+            android:id="@+id/title_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="12.5dp"
+            android:src="@drawable/title_back" />
+
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="充值"
+            android:textColor="@android:color/white"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical" >
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="48dp"
+                android:background="@color/white" >
+
+                <TextView
+                    android:id="@+id/tv_zhanghu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
+                    android:text="账户"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/recharge_name"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_toRightOf="@+id/tv_zhanghu"
+                    android:textColor="@color/title_bg"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/item_linecolor" >
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_height="48dp"
+                android:background="@color/white" >
+
+                <TextView
+                    android:id="@+id/tv_yue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
+                    android:text="余额"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/recharge_beans"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginRight="15dp"
+                    android:layout_toRightOf="@+id/tv_yue"
+                    android:textColor="@color/title_bg"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="10dp"
+                android:text="请选择充值金额"
+                android:textColor="@color/item_textcolor"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" >
+
+                <TextView
+                    android:id="@+id/rc_5"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginLeft="15.0dip"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/bg_recharge_selected"
+                    android:gravity="center"
+                    android:text="5元"
+                    android:textColor="@color/black"
+                    android:textSize="15.0sp" />
+
+                <TextView
+                    android:id="@+id/rc_20"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:text="20元"
+                    android:textColor="@color/black"
+                    android:textSize="15.0sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" >
+
+                <TextView
+                    android:id="@+id/rc_100"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginLeft="15.0dip"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:text="100元"
+                    android:textColor="@color/black"
+                    android:textSize="15.0sp" />
+
+                <TextView
+                    android:id="@+id/rc_other"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:text="其它金额"
+                    android:textColor="@color/black"
+                    android:textSize="15.0sp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="10dp"
+                android:text="请选择充值方式"
+                android:textColor="@color/item_textcolor"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" >
+
+                <LinearLayout
+                    android:id="@+id/rc_duanxin5"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginLeft="15.0dip"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:padding="1dp" >
+
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/recharge_icon_dianxin5" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rc_duanxin15"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:padding="1dp" >
+
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/recharge_icon_dianxin10" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" >
+
+                <LinearLayout
+                    android:id="@+id/rc_zhifubao"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginLeft="15.0dip"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/bg_recharge_selected"
+                    android:gravity="center"
+                    android:padding="1dp" >
+
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/recharge_icon_zhifubao" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rc_yinlian"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:padding="1dp" >
+
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:background="#00000000"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/recharge_icon_yinlian" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" >
+
+                <LinearLayout
+                    android:id="@+id/rc_shoujichongzhika"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginLeft="15.0dip"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:padding="1dp" >
+
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:scaleType="fitXY"
+                        android:src="@drawable/recharge_icon_sjczk" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rc_wxchongzhi"
+                    android:layout_width="fill_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginRight="15.0dip"
+                    android:layout_weight="1.0"
+                    android:background="@drawable/white_cor_bg"
+                    android:gravity="center"
+                    android:padding="1dp" >
+
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:background="@drawable/recharge_icon_wx"
+                        android:scaleType="fitXY" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/recharge_sure"
+                android:layout_width="fill_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/button_bg_shape"
+                android:gravity="center"
+                android:text="确认充值"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="30dp"
+                android:text="小提示:\n1.支付宝、手机支付更快捷\n2.充值遇到问题请联系客服QQ:4007700058"
+                android:textColor="@color/black" />
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

@@ -1,0 +1,134 @@
+package com.zhipu.chinavideo.player;
+
+import android.app.Activity;
+import android.graphics.Point;
+import android.graphics.drawable.AnimationDrawable;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.SurfaceView;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.RelativeLayout.LayoutParams;
+
+import com.yishi.sixshot.IFlyMediaCallback;
+import com.yishi.sixshot.player.FlyRtmpPlayer;
+import com.zhipu.chinavideo.R;
+
+public class PlayerViewController implements IFlyMediaCallback {
+	public static final int VIDEO_LAYOUT_SCALE = 1;
+	public static final int VIDEO_LAYOUT_ZOOM = 3;
+	private boolean isPlay;
+	private View ivLoad;
+	private View bgveiw;
+	private View tiger;
+	private Activity mainActivity = null;
+	private FlyRtmpPlayer rtmpPlayer = null;
+
+	public PlayerViewController(Activity paramActivity,
+			AnimationDrawable paramAnimationDrawable, ImageView paramImageView) {
+		this.mainActivity = paramActivity;
+		this.ivLoad = paramImageView;
+
+	}
+
+	public PlayerViewController(Activity paramActivity, View paramView,
+			View tiger, View bgview) {
+		this.mainActivity = paramActivity;
+		this.ivLoad = paramView;
+		this.tiger = tiger;
+		this.bgveiw = bgview;
+	}
+
+	public void destroyPlayer() {
+		if (this.rtmpPlayer != null) {
+			this.rtmpPlayer.stop();
+			this.rtmpPlayer.destroyPlayer();
+			this.rtmpPlayer = null;
+		}
+	}
+
+	public void engineError(int paramInt, String paramString) {
+		// Log.i("lvjian", "--------视频----》engineError: " + paramInt);
+		this.ivLoad.setVisibility(8);
+		this.tiger.setVisibility(8);
+		this.bgveiw.setVisibility(0);
+	}
+
+	public void enginePause() {
+		// Log.i("lvjian", "--------视频----》enginePause !!!");
+	}
+
+	public void engineResume() {
+		// Log.i("lvjian", "--------视频----》engineResume !!!");
+	}
+
+	public void engineStart() {
+		// Log.i("lvjian", "--------视频----》engineStart !!!");
+		this.ivLoad.setVisibility(8);
+		this.tiger.setVisibility(8);
+		this.bgveiw.setVisibility(8);
+	}
+
+	public void engineStop() {
+		// Log.i("lvjian", "--------视频----》engineStop !!!");
+		this.ivLoad.setVisibility(0);
+		this.tiger.setVisibility(0);
+		this.bgveiw.setVisibility(0);
+	}
+
+	public boolean initPlayerView() {
+		rtmpPlayer = new FlyRtmpPlayer(mainActivity);
+		rtmpPlayer.setStatusCallback(this);
+		RelativeLayout viewLayout = (RelativeLayout) mainActivity
+				.findViewById(R.id.rl_video);
+		if (viewLayout == null) {
+			return false;
+		}
+		@SuppressWarnings("deprecation")
+		int screenWidth = mainActivity.getWindowManager().getDefaultDisplay()
+				.getWidth();
+		float radio = 3f / 4f;
+		int videoHeight = (int) (screenWidth * radio);
+		SurfaceView sView = rtmpPlayer.getVideoView(new Point(screenWidth,
+				videoHeight));
+		RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		lp.addRule(RelativeLayout.CENTER_IN_PARENT, 1);
+		sView.setLayoutParams(lp);
+		viewLayout.addView(sView);
+		if (!rtmpPlayer.initPlayer()) {
+			return false;
+		}
+		return true;
+	}
+
+	public boolean isPlay() {
+		return this.isPlay;
+	}
+
+	public void setVideoSize(int paramInt) {
+		DisplayMetrics disp = mainActivity.getResources().getDisplayMetrics();
+		int windowWidth = disp.widthPixels, windowHeight = disp.heightPixels;
+		if (paramInt == VIDEO_LAYOUT_ZOOM) {
+			float radio = 3f / 4f;
+			int videoHeight = (int) (windowHeight * radio);
+			rtmpPlayer.setVideoViewSize(windowHeight, videoHeight);
+		} else {
+			float videoRatio = 4f / 3f;
+			int width = (int) (windowWidth * videoRatio);
+			rtmpPlayer.setVideoViewSize(width, windowWidth);
+		}
+	}
+
+	public void startPlay(String videoUrl) {
+		this.rtmpPlayer.start(videoUrl);
+		this.isPlay = true;
+		return;
+	}
+	public void stopPlay() {
+		if (this.rtmpPlayer != null)
+			this.rtmpPlayer.stop();
+		this.isPlay = false;
+	}
+}

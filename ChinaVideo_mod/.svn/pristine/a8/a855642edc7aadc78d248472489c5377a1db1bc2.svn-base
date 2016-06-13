@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    <!-- 点歌的界面布局 -->
+    <View
+        android:id="@+id/room_ranklist_top"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <com.zhipu.chinavideo.util.PagerSlidingTabStrip
+        android:id="@+id/dg_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@android:color/white"
+        app:pstsDividerColor="@android:color/transparent"
+        app:pstsIndicatorHeight="2dp"
+        app:pstsShouldExpand="false"
+        app:pstsTabBackground="@drawable/background_tab"
+        app:pstsUnderlineHeight="0.0dp" />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/dg_viewpager"
+        android:layout_width="fill_parent"
+        android:layout_height="210dp"
+        android:background="@color/qianhui" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/white"
+        android:orientation="vertical"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="clip_vertical"
+            android:text="@string/dg_info"
+            android:textColor="@color/guard_color_0"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+</LinearLayout>

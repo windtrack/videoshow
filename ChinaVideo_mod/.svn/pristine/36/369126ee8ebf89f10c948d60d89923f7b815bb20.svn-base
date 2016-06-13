@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/yindao_donghua"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/qd_bg_big" >
+
+    <RelativeLayout
+        android:id="@+id/qd_line_center"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_centerInParent="true" >
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/qd_line_center" >
+
+        <LinearLayout
+            android:id="@+id/qdy_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/z_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:src="@drawable/zi1"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/z_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="21dp"
+                android:src="@drawable/zi2"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/z_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:src="@drawable/zi3"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/z_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:src="@drawable/zi4"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/z_5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="12dp"
+                android:src="@drawable/zi5"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/z_6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="9dp"
+                android:src="@drawable/zi6"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/z_7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:src="@drawable/zi7"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/z_8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:src="@drawable/zi8"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/qd_line"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/qdy_tv"
+            android:layout_marginTop="-20dp" >
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="5dp"
+                android:src="@drawable/zi_tiao" />
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/qd_line"
+            android:layout_marginTop="-15dp"
+            android:gravity="right"
+            android:paddingRight="15dp"
+            android:text="www.0058.com"
+            android:textColor="#30ba00"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <ImageView
+        android:visibility="gone"
+        android:background="@drawable/qd_bg_pic"
+        android:id="@+id/qd_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+</RelativeLayout>

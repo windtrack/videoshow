@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <!-- 填写寄语对户框 -->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/white_cor_bg"
+        android:minHeight="138dp"
+        android:minWidth="300dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/dg_text_title"
+            android:textColor="@color/guard_color_0"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:background="@drawable/gray_cor_bg"
+            android:layout_margin="10dp"
+            android:gravity="right"
+            android:orientation="vertical" >
+
+            <EditText
+                android:id="@+id/choose_song_txt_input"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="left|top"
+                android:hint="@string/input_text_hint"
+                android:padding="5dp"
+                android:background="@null"
+                android:textColor="@color/disc_word"
+                android:textColorHint="@color/disc_word"
+                android:textSize="14sp" />
+            
+            <TextView
+                android:id="@+id/show_words_num"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/25"
+                android:textSize="12sp"
+                android:textColor="@color/disc_word"
+                android:paddingRight="5dp"
+                android:layout_margin="2dp"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/choose_song_txt_cancle_btn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/cancle_btn"
+                android:text="@string/cancel"
+                android:textColor="@color/disc_word"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/choose_song_txt__sure_btn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/green_con_noframe_bg"
+                android:text="@string/sure"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

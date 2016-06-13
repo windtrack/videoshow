@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <include
+        android:id="@+id/myanchor_loading"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        layout="@layout/livehall_loading"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/myanchor_nowifi"
+        layout="@layout/no_network"
+        android:visibility="gone" />
+
+    <ListView
+        android:id="@+id/subcribe_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:divider="@color/item_linecolor"
+        android:dividerHeight="0.5dp" >
+    </ListView>
+
+</LinearLayout>

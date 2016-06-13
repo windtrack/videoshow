@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+    
+     <include
+        android:id="@+id/choose_song_loading"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        layout="@layout/livehall_loading" />
+     
+     <TextView
+         android:id="@+id/choose_song_info" 
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:textColor="@color/TextColorBlack"
+         android:textSize="16sp"
+         android:gravity="center"
+         android:text="@string/dg_null_info"
+         />
+
+    <com.handmark.pulltorefresh.library.PullToRefreshExpandableListView
+        xmlns:PullToRefresh="http://schemas.android.com/apk/res/com.zhipu.chinavideo"
+        android:id="@+id/choose_song_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        PullToRefresh:ptrHeaderSubTextColor="#ff7e7e7e"
+        PullToRefresh:ptrHeaderTextColor="#ff545454"
+        PullToRefresh:ptrMode="pullFromStart"
+        PullToRefresh:ptrRefreshableViewBackground="#fffafafa"
+        PullToRefresh:ptrShowIndicator="false"
+        android:cacheColorHint="#00000000"
+        android:divider="@drawable/listview_line"
+        android:dividerHeight="1dp"
+        android:fadingEdge="none"
+        android:fadingEdgeLength="0.0dip"
+        android:footerDividersEnabled="false"
+        android:headerDividersEnabled="false"
+        android:listSelector="@android:color/transparent" />
+
+</LinearLayout>

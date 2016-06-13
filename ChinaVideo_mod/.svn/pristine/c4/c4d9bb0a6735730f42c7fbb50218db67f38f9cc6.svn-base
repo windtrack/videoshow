@@ -1,0 +1,313 @@
+package com.zhipu.chinavideo.adapter;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.zhipu.chinavideo.MyPhotoAlbumActivity;
+import com.zhipu.chinavideo.R;
+import com.zhipu.chinavideo.db.GlobalData;
+import com.zhipu.chinavideo.entity.OnePhoto;
+import com.zhipu.chinavideo.util.Utils;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory.Options;
+import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.Toast;
+import android.widget.ImageView.ScaleType;
+
+
+
+
+
+/**
+ * GridView的适配器，负责异步从网络上下载图片展示在照片墙上。
+ * 
+ * @author guolin
+ */
+public class PhotoWallAdapter extends ArrayAdapter<OnePhoto> {
+
+
+
+	/**
+	 * GridView的实例
+	 */
+	private GridView mPhotoWall;
+
+	/**
+	 * 记录每个子项的高度。
+	 */
+	private int mItemHeight = 0;
+//	public static ImageLoader mImageLoader = null;
+	public  DisplayImageOptions mOptions;
+	
+	private int location ;
+	
+	Vector<Integer> mVecSelect ;
+	Vector<OnePhoto> mVecSelectPhotoPath ;
+
+	
+	Map<String, Bitmap> m_allshowMap;
+
+	private int uploadIndex =-1;
+	private ImageLoader mImageLoader ;
+	private boolean isSelecting ;
+	
+	
+	public boolean isSelecting() {
+		return isSelecting;
+	}
+
+	public void setSelecting(boolean isSelecting) {
+		this.isSelecting = isSelecting;
+	}
+
+	public int getUploadIndex() {
+		return uploadIndex;
+	}
+	Context mContext ;
+	@SuppressLint("NewApi")
+	public PhotoWallAdapter(Context context, int textViewResourceId, List<OnePhoto> pathList,
+			GridView photoWall) {
+		super(context, textViewResourceId, pathList);
+		mContext = context ;
+		uploadIndex = -1 ;
+		mVecSelect = new Vector<Integer>();
+		mVecSelectPhotoPath = new Vector<OnePhoto>() ;
+		mPhotoWall = photoWall;
+		mOptions = new DisplayImageOptions.Builder().showStubImage(R.drawable.empty_photo).cacheInMemory().cacheOnDisc().build();
+		
+		m_allshowMap = new HashMap() ;
+//		Options decodingOptions = new Options();
+//		mOptions =
+//		new DisplayImageOptions.Builder().showImageOnLoading(R.drawable.empty_photo).decodingOptions(decodingOptions).imageScaleType(ImageScaleType.NONE).build();
+//		
+		
+		
+//		mOptions = new DisplayImageOptions.Builder()  
+//        .showStubImage(R.drawable.empty_photo)  
+//        .showImageForEmptyUri(R.drawable.empty_photo)  
+//        .showImageOnFail(R.drawable.empty_photo)  
+//        .cacheInMemory(true)  
+//        .cacheOnDisc(true)  
+//        .bitmapConfig(Config.RGB_565)  
+//        .build();  
+		
+		
+		mImageLoader = ImageLoader.getInstance();
+		mImageLoader.init(ImageLoaderConfiguration.createDefault(context));
+	
+	}
+
+	@Override
+	public View getView(final int position, View convertView, ViewGroup parent) {
+		
+		View view;
+		if (convertView == null) {
+			view = LayoutInflater.from(getContext()).inflate(R.layout.item_photoshow, null);
+		} else {
+			view = convertView;
+		}
+		final ImageView imageView = (ImageView) view.findViewById(R.id.uploadphoto);
+		if (imageView.getLayoutParams().height != mItemHeight) {
+			imageView.getLayoutParams().height = mItemHeight;
+		}
+		
+		
+		final ImageView img_select = (ImageView) view.findViewById(R.id.img_select);
+		OnePhoto photo = getItem(position);
+		String url = photo.url;
+		 if(url.equals("upload")){
+			 uploadIndex = position ;
+			 imageView.setImageResource(R.drawable.img_uploadphoto);
+			 imageView.setTag(url);
+			 img_select.setVisibility(View.INVISIBLE);
+		 }else{
+			 if(position < GlobalData.getInstance().mPhotoAblumImgPath.size()){
+				 imageView.setTag(url);
+				 imageView.setImageResource(R.drawable.empty_photo);
+				 
+//				 mImageLoader.displayImage(url,imageView, mOptions, null) ;
+				 
+				 String imgUrl = GlobalData.getInstance().mPhotoAblumImgPath.elementAt(position).url;
+				 if(m_allshowMap.containsKey(imgUrl)){
+						imageView.setImageBitmap(m_allshowMap.get(imgUrl));
+				 }else{
+//						File fbitmap = GlobalData.getInstance().getmImageLoader().getDiskCache().get(imgUrl);
+//						if(fbitmap.exists()){
+//							final BitmapFactory.Options options = new BitmapFactory.Options();
+//							options.inJustDecodeBounds = true;
+//							options.inJustDecodeBounds = false;
+//							bitmap = BitmapFactory.decodeFile(fbitmap.getPath(), options);
+//							
+//							Bitmap map = Utils.centerSquareScaleBitmap(bitmap);
+//							m_allshowMap.put(imgUrl, map);
+//							imageView.setImageBitmap(map);
+//						}else{
+							 if(url!=""){
+								 mImageLoader.displayImage(url,imageView, mOptions, new ImageLoadingListener() {
+										@Override
+										public void onLoadingComplete(String arg0, View arg1, Bitmap arg2) {
+											//下载完成
+											if(arg2!=null){
+												
+												if(m_allshowMap.containsKey(arg0)){
+													imageView.setImageBitmap(m_allshowMap.get(arg0));
+												}else{
+													Bitmap map = Utils.centerSquareScaleBitmap(arg2);
+													if(map!=null){
+														imageView.setImageBitmap(map);
+														m_allshowMap.put(arg0, map);
+													}
+												}
+											}
+										}
+									@Override
+									public void onLoadingStarted(String arg0, View arg1) {
+									}
+									@Override
+									public void onLoadingFailed(String arg0, View arg1, FailReason arg2) {
+									}
+									@Override
+									public void onLoadingCancelled(String arg0, View arg1) {
+									}
+								});
+							 }
+				
+//						}
+				 }
+
+				 
+				 
+	
+				 
+				 	
+				 	if(isSelecting){
+				 		img_select.setVisibility(View.VISIBLE);
+				 		if(mVecSelect.contains(position)){
+				 			img_select.setImageResource(R.drawable.img_photoselect);
+						}else{
+							img_select.setImageResource(R.drawable.img_photoselnormal);
+						}
+				 	}else{
+				 		img_select.setVisibility(View.INVISIBLE);
+				 	}
+					
+					
+					
+					imageView.setScaleType(ScaleType.FIT_XY);
+					imageView.setPadding(5, 5, 5, 5);
+			 }
+			
+		 }
+		 
+		// 给ImageView设置一个Tag，保证异步加载图片时不会乱序
+
+		return view;
+	}
+
+
+	
+	
+	/**
+	 * 开始加载下一页的图片，每张图片都会开启一个异步线程去下载。
+	 */
+
+
+	/**
+	 * 判断手机是否有SD卡。
+	 * 
+	 * @return 有SD卡返回true，没有返回false。
+	 */
+	private boolean hasSDCard() {
+		return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+	}
+
+
+
+	/**
+	 * 设置item子项的高度。
+	 */
+	public void setItemHeight(int height) {
+		if (height == mItemHeight) {
+			return;
+		}
+		mItemHeight = height;
+		notifyDataSetChanged();
+	}
+
+	
+	
+	public void setLocation(int location) {
+		if(location == uploadIndex){
+			
+		}else{
+			this.location = location;
+			if(!mVecSelect.contains(location)){
+				mVecSelect.add(location) ;
+				mVecSelectPhotoPath.add(GlobalData.getInstance().mPhotoAblumImgPath.elementAt(location)) ;
+			}else{
+				mVecSelect.removeElement(location);
+				mVecSelectPhotoPath.removeElement(GlobalData.getInstance().mPhotoAblumImgPath.elementAt(location));
+			}
+		}
+		
+//		notifyDataSetChanged();
+		
+	}
+	
+	
+	public void cleanSelect(){
+		mVecSelect.clear();
+	}
+
+	public void doDelete() {
+		
+		while(mVecSelectPhotoPath.size()>0){
+			OnePhoto photo = mVecSelectPhotoPath.elementAt(0) ;
+			if(GlobalData.getInstance().mPhotoAblumImgPath.contains(photo)){
+				((MyPhotoAlbumActivity)mContext).callDeletePhoto(photo.id) ;
+				GlobalData.getInstance().mPhotoAblumImgPath.remove(photo);
+			}
+			mVecSelectPhotoPath.remove(photo);
+		}
+		mVecSelect.clear();
+		
+	}
+
+	public boolean canBeDelete() {
+		// TODO Auto-generated method stub
+		return mVecSelect.size()>0;
+	}
+}

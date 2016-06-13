@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/listview_item_seleted"
+    android:paddingBottom="5.0dip"
+    android:paddingTop="5.0dip" >
+
+    <com.zhipu.chinavideo.util.CircularImage
+        android:id="@+id/anchor_icon"
+        android:layout_width="60.0dip"
+        android:layout_height="60.0dip"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:scaleType="fitXY" />
+
+    <TextView
+        android:id="@+id/anchor_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/anchor_icon"
+        android:textColor="@color/black"
+        android:textSize="18sp" />
+
+    <ImageView
+        android:id="@+id/isplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="5dp"
+        android:layout_toLeftOf="@+id/arrow_right_icon"
+        android:src="@drawable/title_zhibo_icon" />
+
+    <ImageView
+        android:id="@+id/arrow_right_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
+        android:src="@drawable/arrow_right" />
+
+</RelativeLayout>

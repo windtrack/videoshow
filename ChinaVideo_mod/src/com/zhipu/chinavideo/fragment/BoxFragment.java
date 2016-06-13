@@ -1,0 +1,368 @@
+package com.zhipu.chinavideo.fragment;
+
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.AlertDialog;
+import android.app.ActionBar.LayoutParams;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
+import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.GridView;
+
+import com.zhipu.chinavideo.LiveRoomActivity;
+import com.zhipu.chinavideo.LoginActivity;
+import com.zhipu.chinavideo.MyCarActivity;
+import com.zhipu.chinavideo.R;
+import com.zhipu.chinavideo.RegisterActivity;
+import com.zhipu.chinavideo.Strongbox_Activity;
+import com.zhipu.chinavideo.adapter.BoxAdapter;
+import com.zhipu.chinavideo.rechargecenter.RechargeActivity;
+import com.zhipu.chinavideo.util.APP;
+import com.zhipu.chinavideo.util.ConsumpUtil;
+import com.zhipu.chinavideo.util.RotateAnimation;
+import com.zhipu.chinavideo.util.ThreadPoolWrap;
+import com.zhipu.chinavideo.util.Utils;
+
+public class BoxFragment extends Fragment implements OnItemClickListener {
+	SharedPreferences sharedPreferences;
+	private View rootView;
+	private String user_id;
+	private String secret;
+	private String anchor_id;
+	private String room_id;
+	private String dingyue_data;
+	private GridView box_gridview;
+	private BoxAdapter adapter;
+	// 魔幻卡牌的三张图片
+	private ImageView card_copper;
+	private ImageView card_silver;
+	private ImageView card_gold;
+	private PopupWindow pw1;
+
+	public BoxFragment() {
+
+	}
+
+	public static BoxFragment getIntance(String anchorid, String room_id) {
+		BoxFragment boxFragment = new BoxFragment();
+		boxFragment.anchor_id = anchorid;
+		boxFragment.room_id = room_id;
+		return boxFragment;
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		if (rootView == null) {
+			this.rootView = inflater.inflate(R.layout.fragment_box, container,
+					false);
+			sharedPreferences = getActivity().getSharedPreferences(APP.MY_SP,
+					Context.MODE_PRIVATE);
+			user_id = sharedPreferences.getString(APP.USER_ID, "");
+			secret = sharedPreferences.getString(APP.SECRET, "");
+			box_gridview = (GridView) rootView.findViewById(R.id.box_gridView);
+			box_gridview.setOnItemClickListener(this);
+			adapter = new BoxAdapter(getActivity());
+			box_gridview.setAdapter(adapter);
+		}
+		return rootView;
+	}
+
+	@Override
+	public void onDestroyView() {
+		// TODO Auto-generated method stub
+		super.onDestroyView();
+		ViewGroup localViewGroup = (ViewGroup) this.rootView.getParent();
+		if (localViewGroup != null) {
+			localViewGroup.removeView(this.rootView);
+		}
+	}
+
+	private Handler handler = new Handler() {
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case 1:
+				String card_datas = (String) msg.obj;
+				Utils.showToast(getActivity(), "恭喜您获得" + card_datas);
+				break;
+			case 2:
+				String datas = (String) msg.obj;
+				Utils.showToast(getActivity(), datas);
+				break;
+			case 3:
+				break;
+			default:
+				break;
+			}
+		};
+	};
+
+	@Override
+	public void onItemClick(AdapterView<?> arg0, View arg1, int position,
+			long arg3) {
+		// TODO Auto-generated method stub
+		switch (position) {
+		case 0:
+			// 有个是否登录判断
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				LiveRoomActivity.showfanlist();
+			} else {
+				Utils.recharge(getActivity());
+			}
+
+			break;
+		case 1:
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				LiveRoomActivity.showshouhulist();
+			} else {
+				Utils.recharge(getActivity());
+			}
+
+			break;
+		case 2:
+			// 有个是否登录判断
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				showcardwindow(rootView);
+			} else {
+				Utils.recharge(getActivity());
+			}
+			break;
+		case 3:
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				Intent intent = new Intent(getActivity(), MyCarActivity.class);
+				getActivity().startActivity(intent);
+			} else {
+				Utils.recharge(getActivity());
+			}
+			break;
+		case 4:
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				Intent intentbaoxiangxiang = new Intent(getActivity(),
+						Strongbox_Activity.class);
+				getActivity().startActivity(intentbaoxiangxiang);
+			} else {
+				Utils.recharge(getActivity());
+			}
+			break;
+		case 5:
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				Intent intent = new Intent(getActivity(),
+						RechargeActivity.class);
+				intent.putExtra("room_id", room_id);
+				startActivity(intent);
+			} else {
+				Utils.recharge(getActivity());
+			}
+			break;
+		case 6://打开点歌界面  add by zhongxf 2016年4月8日10:53:32
+			if (sharedPreferences.getString(APP.IS_LOGIN, "").equals("true")) {
+				LiveRoomActivity.showChooseSong();
+			} else {
+				Utils.recharge(getActivity());
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	/**
+	 * 开通守护弹出对话框
+	 * 
+	 * @param context
+	 * @param parent
+	 */
+	public void showcardwindow(View parent) {
+		// 显示公聊
+		LiveRoomActivity.setcurrentpubchat();
+		final LayoutInflater inflater = (LayoutInflater) getActivity()
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		final View cardPopupWindow = inflater.inflate(
+				R.layout.magic_card_window, null, false);
+		card_copper = (ImageView) cardPopupWindow
+				.findViewById(R.id.card_copper);
+		card_silver = (ImageView) cardPopupWindow
+				.findViewById(R.id.card_silver);
+		card_gold = (ImageView) cardPopupWindow.findViewById(R.id.card_gold);
+		// 点击铜卡
+		card_copper.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				String beans1 = sharedPreferences.getString(APP.BEANS, "");
+				if(!Utils.isEmpty(beans1) ){
+					if(ConsumpUtil.compareTo(beans1, ConsumpUtil.COPPER_CARD)>=0){
+						getMagicCard("copper");
+						float cX = card_copper.getWidth() / 2.0f;
+						float cY = card_copper.getHeight() / 2.0f;
+						RotateAnimation rotateAnim = new RotateAnimation(cX, cY,
+								RotateAnimation.ROTATE_DECREASE);
+						rotateAnim.setDuration(500);
+						rotateAnim.setFillAfter(true);
+						card_copper.startAnimation(rotateAnim);
+					}else{
+						Utils.Moneynotenough(getActivity(), "余额不足！", room_id);
+					}
+				}else{
+					Utils.Moneynotenough(getActivity(), "余额不足！", room_id);
+				}
+				
+			}
+
+		});
+		// 点击银卡
+		card_silver.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				String beans1 = sharedPreferences.getString(APP.BEANS, "");
+				if(!Utils.isEmpty(beans1) ){
+					if(ConsumpUtil.compareTo(beans1, ConsumpUtil.SLIVER_CARD)>=0){
+						getMagicCard("silver");
+						float cX = card_copper.getWidth() / 2.0f;
+						float cY = card_copper.getHeight() / 2.0f;
+						RotateAnimation rotateAnim = new RotateAnimation(cX, cY,
+								RotateAnimation.ROTATE_DECREASE);
+						rotateAnim.setDuration(500);
+						rotateAnim.setFillAfter(true);
+						card_silver.startAnimation(rotateAnim);
+					}else{
+						Utils.Moneynotenough(getActivity(), "余额不足！", room_id);
+					}
+					
+				}else{
+					Utils.Moneynotenough(getActivity(), "余额不足！", room_id);
+				}
+			}
+		});
+		// 点击金卡
+		card_gold.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				String beans1 = sharedPreferences.getString(APP.BEANS, "");
+				
+				if(!Utils.isEmpty(beans1)){
+					if(ConsumpUtil.compareTo(beans1, ConsumpUtil.GOLD_CARD)>=0){
+						getMagicCard("gold");
+						float cX = card_copper.getWidth() / 2.0f;
+						float cY = card_copper.getHeight() / 2.0f;
+						RotateAnimation rotateAnim = new RotateAnimation(cX, cY,
+								RotateAnimation.ROTATE_DECREASE);
+						rotateAnim.setDuration(500);
+						rotateAnim.setFillAfter(true);
+						card_gold.startAnimation(rotateAnim);
+					}else{
+						Utils.Moneynotenough(getActivity(), "余额不足！", room_id);
+					}
+				}else{
+					Utils.Moneynotenough(getActivity(), "余额不足！", room_id);
+				}
+			}
+		});
+		pw1 = new PopupWindow(cardPopupWindow, LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT, true);
+		ColorDrawable dw = new ColorDrawable(00000000);
+		pw1.setBackgroundDrawable(dw);
+		// 显示popupWindow对话框
+		pw1.showAtLocation(parent, Gravity.CENTER, 0, 0);
+	}
+
+	// 调用卡牌接口
+	private void getMagicCard(final String type) {
+		// TODO Auto-generated method stub
+		Runnable followrun = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					String result = Utils.GetMagicCard(user_id, secret, type,
+							room_id);
+					JSONObject obj = new JSONObject(result);
+					int state = obj.getInt("s");
+					if (state == 1) {
+						Message msg = new Message();
+						JSONObject j = obj.getJSONObject("data");
+						String card_msg = j.getString("name");
+						msg.obj = card_msg;
+						msg.what = 1;
+						handler.sendMessage(msg);
+					} else {
+						Message msg = new Message();
+						String data = obj.getString("data");
+						msg.obj = data;
+						msg.what = 2;
+						handler.sendMessage(msg);
+					}
+
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					handler.sendEmptyMessage(3);
+				}
+			}
+		};
+		ThreadPoolWrap.getThreadPool().executeTask(followrun);
+	}
+
+	/**
+	 * 弹出排行榜，榜单
+	 */
+	private void showpaihang(final Context paramContext) {
+		final AlertDialog localAlertDialog = new AlertDialog.Builder(
+				paramContext).create();
+		localAlertDialog.show();
+		Window localWindow = localAlertDialog.getWindow();
+		localWindow.setGravity(Gravity.BOTTOM);
+		localWindow.setContentView(LayoutInflater.from(paramContext).inflate(
+				R.layout.dialog_logining, null));
+		// 设置大小
+		android.view.WindowManager.LayoutParams lp = localWindow
+				.getAttributes();
+		lp.width = LayoutParams.FILL_PARENT;
+		lp.height = LayoutParams.WRAP_CONTENT;
+		localWindow.setAttributes(lp);
+		localWindow.setWindowAnimations(R.style.mystyle); // 添加动画
+
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		try {
+			Field childFragmentManager = Fragment.class
+					.getDeclaredField("mChildFragmentManager");
+			childFragmentManager.setAccessible(true);
+			childFragmentManager.set(this, null);
+
+		} catch (NoSuchFieldException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+}

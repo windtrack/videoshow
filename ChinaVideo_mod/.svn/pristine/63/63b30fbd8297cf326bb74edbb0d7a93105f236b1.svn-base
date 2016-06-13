@@ -1,0 +1,9 @@
+<!-- ?xml version="1.0" encoding="utf-8"? -->
+<resources>
+
+    <string-array name="smiley_array">
+        <item>[XX]</item>
+        <item>[YY]</item>
+    </string-array>
+
+</resources>

@@ -1,0 +1,30 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:layout_height="46dp" 
+    android:orientation="horizontal">
+
+    <ImageView 
+        android:id="@+id/rank_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/biaoqian"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="10dp"/>
+    <TextView 
+        android:id="@+id/rank_title"
+        android:layout_width="wrap_content"
+        android:layout_height="46dp"
+        android:gravity="center_vertical"
+        android:text="日榜："
+        android:textSize="14sp"
+        android:textColor="@color/rank_title"/>
+    <TextView 
+        android:id="@+id/rank_content"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:gravity="center_vertical"
+        android:textSize="14sp"
+        android:singleLine="true"
+        android:textColor="@color/bg_dialog"/>
+</LinearLayout>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      android:id="@+id/my_content_view1"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+
+        <FrameLayout
+            android:id="@+id/realtabcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="0.0dip"
+            android:layout_weight="1.0" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="2.0dip"
+            android:background="@drawable/bottom_background" >
+        </LinearLayout>
+
+        <android.support.v4.app.FragmentTabHost
+            android:id="@+id/tabhost"
+            android:layout_width="fill_parent"
+            android:layout_height="49.0dip" >
+
+            <FrameLayout
+                android:id="@+id/tabcontent"
+                android:layout_width="0.0dip"
+                android:layout_height="0.0dip"
+                android:layout_weight="0.0" />
+        </android.support.v4.app.FragmentTabHost>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/suibiankankan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:gravity="bottom|center"
+        android:orientation="vertical"
+        android:paddingTop="7.0dip" >
+
+        <RelativeLayout
+            android:layout_width="69dp"
+            android:layout_height="69dp"
+            android:layout_marginBottom="5dip" >
+
+            <com.zhipu.chinavideo.util.CircularImage
+                android:id="@+id/kankan_image"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+
+            <ImageView
+                android:visibility="gone"
+                android:id="@+id/suibiankankan_center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:src="@drawable/suibiankankan_btn" />
+
+            <TextView
+                android:id="@+id/sbkk_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/suibiankankan_center"
+                android:layout_centerHorizontal="true"
+                android:text="随便看看"
+                android:textSize="10sp"
+                android:visibility="gone" >
+            </TextView>
+        </RelativeLayout>
+    </LinearLayout>
+
+    <include
+        android:id="@+id/shouye_loading"
+        layout="@layout/livehall_loading" />
+
+    <ViewStub
+        android:id="@+id/type_choice_pop_stub"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true" />
+
+    <ViewStub
+        android:id="@+id/rank_choice_pop_stub"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true" />
+
+    <ViewStub
+        android:id="@+id/anchor_onlineview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentBottom="true" />
+
+</RelativeLayout>
